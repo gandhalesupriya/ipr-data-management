@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symbiosis IPR Data Management System — IP Cell</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #e8f4fb;
+    --bg-tertiary: #d6ecf7;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b67;
+    --border-light: rgba(0,0,0,0.10);
+    --border-mid: rgba(0,0,0,0.18);
+    --blue-fill: #fdf0f0; --blue-text: #7B1818; --blue-btn: #8B0000; --blue-btn-hov: #6B0000;
+    --green-fill: #EAF3DE; --green-text: #27500A;
+    --teal-fill: #E1F5EE; --teal-text: #085041;
+    --amber-fill: #FAEEDA; --amber-text: #633806;
+    --red-fill: #FCEBEB; --red-text: #791F1F; --red-btn: #A32D2D;
+    --purple-fill: #EEEDFE; --purple-text: #3C3489;
+    --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg-tertiary); min-height: 100vh; }
+
+  /* ── Top bar ── */
+  .topbar { background: linear-gradient(135deg, #8B0000 0%, #C0392B 60%, #922B21 100%); border-bottom: none; padding: 0 24px; height: 72px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50; box-shadow: 0 3px 12px rgba(139,0,0,0.35); }
+  .topbar-logo { display: flex; align-items: center; gap: 14px; }
+  .topbar-logo img { height: 54px; width: auto; border-radius: 4px; background: #fff; padding: 4px 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .topbar-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.3); }
+  .topbar-title-block { display: flex; flex-direction: column; gap: 1px; }
+  .topbar-title { font-size: 16px; font-weight: 700; letter-spacing: .01em; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  .topbar-subtitle { font-size: 11px; color: rgba(255,255,255,0.75); font-weight: 400; letter-spacing: .02em; }
+  .topbar-badge { font-size: 11px; padding: 3px 10px; background: rgba(255,255,255,0.18); color: #fff; border-radius: 20px; font-weight: 500; border: 1px solid rgba(255,255,255,0.3); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .topbar-right .btn { border-color: rgba(255,255,255,0.35); color: #fff; background: rgba(255,255,255,0.12); }
+  .topbar-right .btn:hover { background: rgba(255,255,255,0.22); }
+  .alert-badge { background: #fff; color: var(--red-btn); font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 700; display: none; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+  /* ── Nav ── */
+  .nav { background: #f0f8fd; border-bottom: 2px solid #c5e1f0; padding: 0 24px; display: flex; gap: 2px; overflow-x: auto; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .nav-btn { padding: 12px 16px; border: none; background: none; border-radius: var(--radius-md) var(--radius-md) 0 0; cursor: pointer; font-size: 13px; color: var(--text-secondary); font-family: inherit; display: flex; align-items: center; gap: 6px; white-space: nowrap; border-bottom: 2px solid transparent; transition: color .15s, background .15s; }
+  .nav-btn:hover { color: #8B0000; background: #daeef8; }
+  .nav-btn.active { color: #8B0000; font-weight: 600; border-bottom-color: #8B0000; background: #daeef8; }
+  .nav-btn .ti { font-size: 15px; }
+
+  /* ── Content ── */
+  .content { padding: 20px; max-width: 1600px; }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .toolbar input[type=text] { flex: 1; min-width: 200px; padding: 8px 12px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); background: var(--bg-primary); font-size: 13px; color: var(--text-primary); font-family: inherit; }
+  .toolbar input[type=text]:focus { outline: 2px solid var(--blue-btn); outline-offset: -1px; }
+
+  /* ── Buttons ── */
+  .btn { padding: 8px 14px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); background: var(--bg-primary); cursor: pointer; font-size: 13px; font-family: inherit; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px; transition: background .12s; }
+  .btn:hover { background: var(--bg-secondary); }
+  .btn .ti { font-size: 15px; }
+  .btn.primary { background: var(--blue-btn); color: #fff; border-color: var(--blue-btn); }
+  .btn.primary:hover { background: var(--blue-btn-hov); }
+  .btn.danger { background: var(--red-btn); color: #fff; border-color: var(--red-btn); }
+  .btn.sm { padding: 5px 10px; font-size: 12px; }
+  .btn-icon { padding: 5px 7px; border: 0.5px solid var(--border-light); border-radius: var(--radius-sm); background: none; cursor: pointer; color: var(--text-secondary); font-size: 15px; line-height: 1; display: inline-flex; align-items: center; transition: background .12s; }
+  .btn-icon:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+  /* ── Stats ── */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px 16px; }
+  .stat-card .lbl { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-card .val { font-size: 26px; font-weight: 600; line-height: 1; }
+  .stat-card.ok .val { color: var(--green-text); }
+  .stat-card.warn .val { color: var(--amber-text); }
+  .stat-card.danger .val { color: var(--red-btn); }
+  .stat-card.blue .val { color: var(--blue-btn); }
+
+  /* ── Table ── */
+  .tbl-wrap { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); overflow: auto; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th { padding: 10px 12px; text-align: left; font-weight: 600; font-size: 11px; color: var(--text-secondary); border-bottom: 0.5px solid var(--border-light); white-space: nowrap; background: var(--bg-secondary); text-transform: uppercase; letter-spacing: .04em; }
+  tbody td { padding: 9px 12px; border-bottom: 0.5px solid var(--border-light); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-secondary); }
+
+  /* ── Status pills ── */
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .pill-filed      { background: var(--blue-fill); color: var(--blue-text); }
+  .pill-published  { background: var(--teal-fill); color: var(--teal-text); }
+  .pill-granted    { background: var(--green-fill); color: var(--green-text); }
+  .pill-pending    { background: var(--amber-fill); color: var(--amber-text); }
+  .pill-registered { background: var(--green-fill); color: var(--green-text); }
+  .pill-abandoned  { background: var(--red-fill); color: var(--red-text); }
+  .pill-examination { background: var(--purple-fill); color: var(--purple-text); }
+  .pill-objected   { background: var(--red-fill); color: var(--red-text); }
+
+  /* ── Due dates ── */
+  .due-red    { color: #A32D2D; font-weight: 600; }
+  .due-orange { color: #854F0B; font-weight: 600; }
+  .due-green  { color: #3B6D11; }
+  .due-label  { font-size: 10.5px; display: block; margin-top: 1px; }
+
+  /* ── Modals ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-start; justify-content: center; padding: 30px 16px; overflow-y: auto; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg-primary); border-radius: var(--radius-lg); border: 0.5px solid var(--border-mid); width: 100%; max-width: 760px; padding: 24px; margin: auto; }
+  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .modal h2 .ti { font-size: 18px; color: var(--blue-btn); }
+
+  /* ── Form grid ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fg-full { grid-column: 1 / -1; }
+  .fg-hdr { grid-column: 1 / -1; font-size: 10.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; padding: 8px 0 4px; border-top: 0.5px solid var(--border-light); margin-top: 4px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 11.5px; color: var(--text-secondary); font-weight: 500; }
+  .form-group label small { font-size: 10px; color: var(--blue-btn); margin-left: 4px; }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 8px 10px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md);
+    font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: 2px solid var(--blue-btn); outline-offset: -1px; }
+  .form-group textarea { resize: vertical; min-height: 60px; }
+
+  /* ── Multi-entry ── */
+  .multi-box { background: var(--bg-secondary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 12px; grid-column: 1 / -1; }
+  .multi-box .multi-lbl { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
+  .entry-row { display: grid; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .entry-row.two   { grid-template-columns: 1fr 1fr auto; }
+  .entry-row.three { grid-template-columns: 1fr 1fr 1fr auto; }
+  .entry-row.four  { grid-template-columns: 1fr 1fr 1fr 1fr auto; }
+  .entry-row input { padding: 7px 9px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 12.5px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; }
+  .entry-row input:focus { outline: 2px solid var(--blue-btn); outline-offset: -1px; }
+
+  /* ── Modal footer ── */
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 14px; border-top: 0.5px solid var(--border-light); }
+
+  /* ── Alert panel ── */
+  .panel { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow); }
+  .panel-hdr { font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+  .alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .dot-red    { background: #E24B4A; }
+  .dot-orange { background: #EF9F27; }
+  .dot-blue   { background: #378ADD; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 11px; background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border-light); margin: 1px; }
+
+  /* ── Dashboard grid ── */
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); font-size: 13px; }
+  .empty-state .ti { font-size: 32px; display: block; margin-bottom: 8px; opacity: .4; }
+
+  /* ── Detail view ── */
+  .detail-section { margin-bottom: 16px; }
+  .detail-section h3 { font-size: 10.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 0.5px solid var(--border-light); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .detail-field .lbl { font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
+  .detail-field .val { font-size: 13px; }
+
+  /* ── Email config ── */
+  .config-block { background: var(--bg-secondary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 14px; }
+  .config-block h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+  .config-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .config-row label { font-size: 12px; color: var(--text-secondary); min-width: 130px; font-weight: 500; }
+  .config-row input, .config-row select { flex: 1; padding: 7px 10px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; }
+  .info-block { background: var(--blue-fill); border: 0.5px solid #B5D4F4; border-radius: var(--radius-lg); padding: 16px; }
+  .info-block h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--blue-text); }
+  .info-block p, .info-block li { font-size: 12.5px; color: var(--blue-text); line-height: 1.7; }
+  .info-block ul { padding-left: 16px; margin: 4px 0; }
+  .action-btns { display: flex; gap: 4px; }
+
+  /* ── Toast ── */
+  #toast { position: fixed; bottom: 24px; right: 24px; background: #1a1a18; color: #fff; padding: 10px 18px; border-radius: var(--radius-md); font-size: 13px; z-index: 999; display: none; animation: fadeIn .2s; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+  @media(max-width:700px){ .form-grid{grid-template-columns:1fr} .dash-grid{grid-template-columns:1fr} .entry-row.three,.entry-row.four{grid-template-columns:1fr 1fr auto} }
+
+  /* ── Reports ── */
+  .rpt-toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+  .rpt-toolbar select { padding:8px 12px; border:0.5px solid var(--border-mid); border-radius:var(--radius-md); font-size:13px; background:var(--bg-primary); color:var(--text-primary); font-family:inherit; }
+  .rpt-section { margin-bottom:22px; }
+  .rpt-section-hdr { font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:12px; display:flex; align-items:center; gap:7px; border-bottom:2px solid var(--bg-tertiary); padding-bottom:8px; }
+  .rpt-section-hdr .ti { font-size:16px; color:var(--blue-btn); }
+  .rpt-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; }
+  .rpt-card { background:var(--bg-primary); border:0.5px solid var(--border-light); border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow); }
+  .rpt-card-title { font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .rpt-card canvas { display:block; width:100%!important; }
+  .rpt-card svg { display:block; width:100%; }
+  .rpt-insight { background:var(--blue-fill); border:0.5px solid #c8dff5; border-radius:var(--radius-md); padding:11px 14px; font-size:12.5px; color:var(--blue-text); margin-top:10px; line-height:1.6; }
+  .rpt-insight b { font-weight:700; }
+  .rpt-kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:18px; }
+  .rpt-kpi { background:var(--bg-primary); border:0.5px solid var(--border-light); border-radius:var(--radius-lg); padding:14px 16px; text-align:center; box-shadow:var(--shadow); }
+  .rpt-kpi .k-val { font-size:28px; font-weight:700; line-height:1; margin-bottom:4px; }
+  .rpt-kpi .k-lbl { font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; font-weight:500; }
+  .rpt-kpi.blue .k-val { color:var(--blue-btn); }
+  .rpt-kpi.green .k-val { color:var(--green-text); }
+  .rpt-kpi.amber .k-val { color:var(--amber-text); }
+  .rpt-kpi.red .k-val { color:var(--red-btn); }
+  .rpt-table-wrap { background:var(--bg-primary); border:0.5px solid var(--border-light); border-radius:var(--radius-lg); overflow:auto; box-shadow:var(--shadow); }
+  .rpt-legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .rpt-legend-item { display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--text-secondary); }
+  .rpt-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+  .rpt-print-btn { margin-left:auto; }
+  @media print {
+    #login-screen, .topbar, .nav, .rpt-toolbar .btn, .rpt-print-btn { display:none!important; }
+    .content { padding:0!important; }
+    .rpt-card { box-shadow:none!important; break-inside:avoid; }
+  }
+  .rpt-badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-granted { background:var(--green-fill); color:var(--green-text); }
+  .badge-pending { background:var(--amber-fill); color:var(--amber-text); }
+  .badge-filed   { background:var(--blue-fill); color:var(--blue-text); }
+  .badge-other   { background:var(--bg-tertiary); color:var(--text-secondary); }
+
+  /* ── Login Portal ── */
+  #login-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #8B0000 0%, #C0392B 55%, #6e1f1f 100%);
+    padding: 24px;
+  }
+  .login-card {
+    background: var(--bg-primary); border-radius: var(--radius-lg); width: 100%; max-width: 380px;
+    padding: 32px 30px 26px; box-shadow: 0 16px 40px rgba(0,0,0,0.28); position: relative;
+  }
+  .login-logo-row { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .login-logo-row img { height: 56px; width: auto; border-radius: 4px; }
+  .login-title { font-size: 16px; font-weight: 700; color: var(--text-primary); text-align: center; }
+  .login-subtitle { font-size: 11.5px; color: var(--text-secondary); text-align: center; margin-top: 2px; line-height: 1.5; }
+  .login-form { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .login-form .form-group label { font-weight: 600; }
+  .login-form .pwd-wrap { position: relative; display: flex; }
+  .login-form .pwd-wrap input { flex: 1; padding-right: 36px; }
+  .pwd-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 16px; line-height: 1; padding: 2px; }
+  .login-remember { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
+  .login-remember input { accent-color: var(--blue-btn); }
+  .login-error { background: var(--red-fill); color: var(--red-text); font-size: 12.5px; padding: 9px 12px; border-radius: var(--radius-md); display: none; align-items: center; gap: 7px; }
+  .login-error.show { display: flex; }
+  .login-btn { width: 100%; padding: 11px 14px; border: none; border-radius: var(--radius-md); background: var(--blue-btn); color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background .12s; }
+  .login-btn:hover { background: var(--blue-btn-hov); }
+  .login-hint { margin-top: 18px; background: var(--bg-secondary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 10px 12px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; }
+  .login-hint b { color: var(--text-primary); }
+  .login-footer-note { text-align: center; font-size: 10.5px; color: rgba(255,255,255,0.8); margin-top: 16px; }
+  .user-chip { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 4px 6px 4px 10px; color: #fff; font-size: 12px; }
+  .user-chip .ti { font-size: 16px; }
+  .user-chip .role-tag { font-size: 9.5px; background: rgba(255,255,255,0.22); padding: 1px 7px; border-radius: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN PORTAL -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo-row">
+      <img id="login-logo-img" src="" alt="Symbiosis International (Deemed University)">
+      <div class="login-title">Symbiosis IPR Data Management System</div>
+      <div class="login-subtitle">IP Cell — Symbiosis International (Deemed University)<br>Authorized personnel only</div>
+    </div>
+    <div id="login-error" class="login-error"><i class="ti ti-alert-circle"></i><span id="login-error-msg">Invalid username or password.</span></div>
+    <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="login-username">Username</label>
+        <input type="text" id="login-username" autocomplete="username" placeholder="e.g. ipcell.admin" required>
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <div class="pwd-wrap">
+          <input type="password" id="login-password" autocomplete="current-password" placeholder="Enter password" required>
+          <button type="button" class="pwd-toggle" onclick="togglePwd()"><i class="ti ti-eye" id="pwd-eye-icon"></i></button>
+        </div>
+      </div>
+      <div class="login-remember">
+        <input type="checkbox" id="login-remember">
+        <label for="login-remember">Keep me signed in on this device</label>
+      </div>
+      <button type="submit" class="login-btn"><i class="ti ti-login-2"></i> Sign In</button>
+    </form>
+    <div class="login-hint">
+      <b>Demo credentials</b> (replace with your institution's directory/SSO before deployment):<br>
+      Admin — <b>admin</b> / <b>Symbiosis@2026</b><br>
+      IP Cell Staff — <b>ipcell</b> / <b>IPCell@2026</b>
+    </div>
+  </div>
+</div>
+<div class="login-footer-note" id="login-footer-note" style="display:none;"></div>
+
+<!-- APP (hidden until login) -->
+<div id="app-wrapper" style="display:none;">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <img id="topbar-logo-img" src="data:image/jpeg;base64,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bO/tLixuYru6DQ3MTRuMykj5WAPQ17/RSpYZUpRaeiVvxuVjs8qY+hVo1IK85qd+1o8qX3dT4w+GWmapa/8ABQLxnqEumXkem3VvcxJePbuIWISHo+MH7p79q+w9XZU0m9Zk8xRA5KYzuG08Yq5RW1Kn7NNX3bf3nBmGYPHzpzcbckIx335Va/zPjH/gmzomp6HoHjiPU9MvNNlkns3UXdu8RcbJem4DNeiftH2dx4u+M3wT8O6chmu7TWxr11sGfJt7dkYs3oDhlBPfAr6KrA0vwRpWleKdW8RxxPLrOpKkc11PIXZIkACxRg8ImRnaOpJJyawhh+SjGje6X+dz062drEZnVzSULSknZbq7jy6vTRb/AIeZv0UUV2nyoUUUUAFFFFAFPWLOXUdIvrSCdrWaeB4knXOY2ZSAwx6E5/CvIL34L+JLLTi8XjLX9RuUht1WKHU7iHcyRssh5nC4ZirdumK9rorOdOM9zroYqrh9IWt6JnlOkfBnUNL8QLqUPijVI7YX8d39hN5cbXjGCY5AJtrNkcsQQ3O4HOao+Jvhn4lvvEniC+tNd8Q/Y5ljktbSDVZIU3FmLqmJwE6jqoGMY6Zr2SipdKNrI3WYV1PnlZu1tUtv6R5BdfA/WZhemDx94hhE8MwhV9RuibeRpAyf8tjkKuV5575qZPhDrdpqyyQ+MNbmibDsbi9nkiTaY/l2tMeW2sc7f4iOBxXrNFDpQYv7QxFrXX3L/IKKKK2POCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/Z" alt="Symbiosis International (Deemed University)">
+    <div class="topbar-divider"></div>
+    <div class="topbar-title-block">
+      <span class="topbar-title">Symbiosis IPR Data Management System</span>
+      <span class="topbar-subtitle">IP Cell — Symbiosis International (Deemed University)</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="alert-badge" id="alert-badge"></span>
+    <span class="topbar-badge">IP Cell — Internal</span>
+    <button class="btn sm" onclick="goTab('alerts')"><i class="ti ti-bell"></i> Alerts</button>
+    <div class="user-chip">
+      <i class="ti ti-user-circle"></i>
+      <span id="user-chip-name">—</span>
+      <span class="role-tag" id="user-chip-role">—</span>
+    </div>
+    <button class="btn sm" onclick="handleLogout()" title="Sign out"><i class="ti ti-logout-2"></i></button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav" id="main-nav">
+  <button class="nav-btn active" data-tab="dashboard" onclick="goTab('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+  <button class="nav-btn" data-tab="patents" onclick="goTab('patents')"><i class="ti ti-file-certificate"></i> Patents</button>
+  <button class="nav-btn" data-tab="designs" onclick="goTab('designs')"><i class="ti ti-palette"></i> Designs</button>
+  <button class="nav-btn" data-tab="copyrights" onclick="goTab('copyrights')"><i class="ti ti-copyright"></i> Copyrights</button>
+  <button class="nav-btn" data-tab="alerts" onclick="goTab('alerts')"><i class="ti ti-bell-ringing"></i> Due Date Alerts</button>
+  <button class="nav-btn" data-tab="email" onclick="goTab('email')"><i class="ti ti-mail-cog"></i> Email Config</button>
+  <button class="nav-btn" data-tab="reports" onclick="goTab('reports')"><i class="ti ti-chart-bar"></i> Reports & Analysis</button>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content" id="main-content"></div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+</div><!-- /#app-wrapper -->
+
+<script>
+'use strict';
+
+/* ===== AUTH (demo only — replace with real backend/SSO before production) ===== */
+const AUTH_USERS = [
+  { username: 'admin',  password: 'Symbiosis@2026', name: 'IP Cell Admin',   role: 'Admin' },
+  { username: 'ipcell', password: 'IPCell@2026',     name: 'IP Cell Staff',  role: 'Staff' }
+];
+let currentUser = null;
+
+function initLoginLogo() {
+  const src = document.getElementById('topbar-logo-img').getAttribute('src');
+  document.getElementById('login-logo-img').setAttribute('src', src);
+}
+
+function togglePwd() {
+  const input = document.getElementById('login-password');
+  const icon = document.getElementById('pwd-eye-icon');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  icon.className = showing ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errBox = document.getElementById('login-error');
+  const errMsg = document.getElementById('login-error-msg');
+
+  const match = AUTH_USERS.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+
+  if (!match) {
+    errMsg.textContent = 'Invalid username or password. Please try again.';
+    errBox.classList.add('show');
+    document.getElementById('login-password').value = '';
+    return;
+  }
+
+  errBox.classList.remove('show');
+  currentUser = match;
+  document.getElementById('user-chip-name').textContent = match.name;
+  document.getElementById('user-chip-role').textContent = match.role;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = '';
+  toast(`Welcome, ${match.name}.`);
+}
+
+function handleLogout() {
+  currentUser = null;
+  document.getElementById('app-wrapper').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-form').reset();
+  document.getElementById('login-error').classList.remove('show');
+}
+
+/* ===== DATA STORE ===== */
+const DB = {
+  patents: [],
+  designs: [],
+  copyrights: [],
+  emailConfig: { recipients: 'ipcell@institute.ac.in', alertDays: [1,7,15,30], smtp: '', fromName: 'IP Cell' }
+};
+
+/* ===== UTILS ===== */
+const uid = () => Math.random().toString(36).slice(2,10);
+const today = () => new Date();
+
+function parseDate(s) {
+  if (!s) return null;
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function formatDate(s) {
+  if (!s) return '—';
+  const d = parseDate(s);
+  if (!d) return '—';
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function addMonths(s, n) {
+  if (!s) return '';
+  const d = parseDate(s);
+  if (!d) return '';
+  d.setMonth(d.getMonth() + n);
+  return d.toISOString().slice(0,10);
+}
+
+function addDays(s, n) {
+  if (!s) return '';
+  const d = parseDate(s);
+  if (!d) return '';
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0,10);
+}
+
+function addYears(s, n) {
+  if (!s) return '';
+  const d = parseDate(s);
+  if (!d) return '';
+  d.setFullYear(d.getFullYear() + n);
+  return d.toISOString().slice(0,10);
+}
+
+function daysUntil(s) {
+  const d = parseDate(s);
+  if (!d) return null;
+  return Math.ceil((d - today()) / 86400000);
+}
+
+function dueClass(s) {
+  const n = daysUntil(s);
+  if (n === null) return '';
+  if (n < 0) return 'due-red';
+  if (n <= 15) return 'due-red';
+  if (n <= 30) return 'due-orange';
+  return 'due-green';
+}
+
+function dueLabel(s) {
+  const n = daysUntil(s);
+  if (n === null) return '';
+  if (n < 0) return `${Math.abs(n)}d overdue`;
+  if (n === 0) return 'Today!';
+  return `${n} days left`;
+}
+
+function getAY(s) {
+  const d = parseDate(s);
+  if (!d) return '—';
+  const y = d.getFullYear(), m = d.getMonth();
+  return m >= 3 ? `${y}-${String(y+1).slice(2)}` : `${y-1}-${String(y).slice(2)}`;
+}
+function getCY(s) { const d = parseDate(s); return d ? String(d.getFullYear()) : '—'; }
+function getFY(s) { return getAY(s); }
+
+function statusPill(status) {
+  const cls = (status||'filed').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z-]/g,'');
+  return `<span class="pill pill-${cls}">${status||'—'}</span>`;
+}
+
+function toast(msg, dur=2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', dur);
+}
+
+function g(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+/* ===== ALERTS ===== */
+function getAllAlerts() {
+  const alerts = [];
+  const WINDOW = 60;
+  DB.patents.forEach(p => {
+    [
+      { label: 'Publication Due', date: p.pubDate },
+      { label: 'FER Response Due', date: p.ferDueDate },
+      { label: 'Sub-FER Response Due', date: p.subFerDueDate },
+      { label: 'Written Submission 1 Due', date: p.ws1Due },
+      { label: 'Written Submission 2 Due', date: p.ws2Due },
+      { label: 'Renewal Due', date: p.renewalDue },
+    ].forEach(f => {
+      const n = daysUntil(f.date);
+      if (n !== null && n <= WINDOW) {
+        alerts.push({ type: 'Patent', id: p.id, title: p.title || 'Untitled', no: p.patentNo, field: f.label, date: f.date, days: n });
+      }
+    });
+  });
+  DB.designs.forEach(d => {
+    [{ label: 'FER Response Due', date: d.ferDueDate }].forEach(f => {
+      const n = daysUntil(f.date);
+      if (n !== null && n <= WINDOW) {
+        alerts.push({ type: 'Design', id: d.id, title: d.articleName || 'Untitled', no: d.designNo, field: f.label, date: f.date, days: n });
+      }
+    });
+  });
+  DB.copyrights.forEach(c => {
+    [{ label: 'FER Response Due', date: c.ferDueDate }].forEach(f => {
+      const n = daysUntil(f.date);
+      if (n !== null && n <= WINDOW) {
+        alerts.push({ type: 'Copyright', id: c.id, title: c.title || 'Untitled', no: c.rocNo, field: f.label, date: f.date, days: n });
+      }
+    });
+  });
+  return alerts.sort((a, b) => a.days - b.days);
+}
+
+function updateAlertBadge() {
+  const a = getAllAlerts();
+  const el = document.getElementById('alert-badge');
+  if (el) { el.textContent = a.length + ' alerts'; el.style.display = a.length ? 'inline' : 'none'; }
+}
+
+/* ===== TAB ROUTING ===== */
+let currentTab = 'dashboard';
+let patentSearch = '', designSearch = '', copyrightSearch = '';
+
+function goTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  render();
+}
+
+function render() {
+  updateAlertBadge();
+  const el = document.getElementById('main-content');
+  if (currentTab === 'dashboard')   el.innerHTML = renderDashboard();
+  if (currentTab === 'patents')     el.innerHTML = renderPatents();
+  if (currentTab === 'designs')     el.innerHTML = renderDesigns();
+  if (currentTab === 'copyrights')  el.innerHTML = renderCopyrights();
+  if (currentTab === 'alerts')      el.innerHTML = renderAlertsTab();
+  if (currentTab === 'email')       el.innerHTML = renderEmailConfig();
+  if (currentTab === 'reports')     el.innerHTML = renderReports();
+}
+
+/* ===== DASHBOARD ===== */
+function renderDashboard() {
+  const alerts = getAllAlerts();
+  const overdue = alerts.filter(a => a.days < 0).length;
+  const urgent = alerts.filter(a => a.days >= 0 && a.days <= 7).length;
+  const total = DB.patents.length + DB.designs.length + DB.copyrights.length;
+  return `
+<div class="stats-row">
+  <div class="stat-card blue"><div class="lbl">Total IPRs</div><div class="val">${total}</div></div>
+  <div class="stat-card blue"><div class="lbl">Patents</div><div class="val">${DB.patents.length}</div></div>
+  <div class="stat-card blue"><div class="lbl">Designs</div><div class="val">${DB.designs.length}</div></div>
+  <div class="stat-card blue"><div class="lbl">Copyrights</div><div class="val">${DB.copyrights.length}</div></div>
+  <div class="stat-card ${overdue > 0 ? 'danger' : 'ok'}"><div class="lbl">Overdue</div><div class="val">${overdue}</div></div>
+  <div class="stat-card ${urgent > 0 ? 'warn' : 'ok'}"><div class="lbl">Due ≤ 7 days</div><div class="val">${urgent}</div></div>
+</div>
+<div class="dash-grid">
+  <div class="panel">
+    <div class="panel-hdr"><i class="ti ti-alert-triangle" style="color:#E24B4A"></i> Upcoming Due Dates (next 60 days)</div>
+    ${alerts.length === 0 ? `<div class="empty-state"><i class="ti ti-circle-check"></i>No upcoming due dates</div>` :
+      alerts.slice(0,10).map(a => `
+      <div class="alert-item">
+        <div class="alert-dot ${a.days < 0 ? 'dot-red' : a.days <= 7 ? 'dot-red' : a.days <= 15 ? 'dot-orange' : 'dot-blue'}"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.title}</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:1px">${a.type} · ${a.field}</div>
+          <div style="font-size:11px;color:var(--text-secondary)">${formatDate(a.date)}</div>
+        </div>
+        <div class="${a.days < 0 ? 'due-red' : a.days <= 15 ? 'due-red' : 'due-orange'}" style="font-size:12px;white-space:nowrap">${dueLabel(a.date)}</div>
+      </div>`).join('')}
+  </div>
+  <div class="panel">
+    <div class="panel-hdr"><i class="ti ti-chart-donut-3"></i> Status Breakdown</div>
+    ${[['Patents', DB.patents], ['Designs', DB.designs], ['Copyrights', DB.copyrights]].map(([name, arr]) => {
+      const map = {};
+      arr.forEach(r => { const s = r.status || 'Unknown'; map[s] = (map[s] || 0) + 1; });
+      return `<div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${name} (${arr.length})</div>
+        ${Object.entries(map).map(([s,c]) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          ${statusPill(s)}
+          <span style="font-size:12px;font-weight:600">${c}</span>
+        </div>`).join('') || `<span style="font-size:12px;color:var(--text-secondary)">No records yet</span>`}
+      </div>`;
+    }).join('')}
+  </div>
+</div>`;
+}
+
+/* ===== PATENTS ===== */
+function renderPatents() {
+  const list = DB.patents.filter(p =>
+    !patentSearch || [p.title, p.patentNo, p.instituteName, ...(p.applicants||[]).map(a=>a.name), ...(p.inventors||[]).map(i=>i.name)]
+      .some(v => (v||'').toLowerCase().includes(patentSearch.toLowerCase()))
+  );
+  return `
+<div class="toolbar">
+  <input type="text" placeholder="Search by title, patent no., applicant, inventor, institute…" value="${patentSearch}" oninput="patentSearch=this.value;renderPatentsInPlace()">
+  <button class="btn primary" onclick="openPatentForm()"><i class="ti ti-plus"></i> Add Patent</button>
+  <button class="btn" onclick="exportCSV('patents','IPR_Patents')"><i class="ti ti-download"></i> Export CSV</button>
+</div>
+<div class="tbl-wrap" id="patent-table-wrap">
+  ${patentTableHTML(list)}
+</div>`;
+}
+
+function patentTableHTML(list) {
+  return `<table>
+<thead><tr>
+  <th>#</th><th>Patent No.</th><th>Title</th><th>Applicant(s)</th><th>Inventor(s)</th>
+  <th>Filing Date</th><th>Status</th><th>FER Due</th><th>Renewal Due</th>
+  <th>AY</th><th>Institute</th><th></th>
+</tr></thead>
+<tbody>
+${list.length === 0 ? `<tr><td colspan="12"><div class="empty-state"><i class="ti ti-file-off"></i>No patents found. Click "Add Patent" to create one.</div></td></tr>` :
+  list.map((p,i) => `<tr>
+  <td>${i+1}</td>
+  <td style="white-space:nowrap;font-weight:500">${p.patentNo||'—'}</td>
+  <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.title||''}">${p.title||'—'}</td>
+  <td style="font-size:12px">${(p.applicants||[]).map(a=>a.name).filter(Boolean).join(', ')||'—'}</td>
+  <td style="font-size:12px">${(p.inventors||[]).map(a=>a.name).filter(Boolean).join(', ')||'—'}</td>
+  <td style="white-space:nowrap">${formatDate(p.filingDate)}</td>
+  <td>${statusPill(p.status)}</td>
+  <td><span class="${dueClass(p.ferDueDate)}">${formatDate(p.ferDueDate)}<span class="due-label">${dueLabel(p.ferDueDate)}</span></span></td>
+  <td><span class="${dueClass(p.renewalDue)}">${formatDate(p.renewalDue)}<span class="due-label">${dueLabel(p.renewalDue)}</span></span></td>
+  <td style="white-space:nowrap">${getAY(p.filingDate)}</td>
+  <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.instituteName||'—'}</td>
+  <td><div class="action-btns">
+    <button class="btn-icon" onclick="viewPatentDetail('${p.id}')" title="View"><i class="ti ti-eye"></i></button>
+    <button class="btn-icon" onclick="openPatentForm('${p.id}')" title="Edit"><i class="ti ti-edit"></i></button>
+    <button class="btn-icon" onclick="deleteRec('patents','${p.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+  </div></td>
+</tr>`).join('')}
+</tbody></table>`;
+}
+
+function renderPatentsInPlace() {
+  updateAlertBadge();
+  const list = DB.patents.filter(p =>
+    !patentSearch || [p.title, p.patentNo, p.instituteName, ...(p.applicants||[]).map(a=>a.name), ...(p.inventors||[]).map(i=>i.name)]
+      .some(v => (v||'').toLowerCase().includes(patentSearch.toLowerCase()))
+  );
+  const wrap = document.getElementById('patent-table-wrap');
+  if (wrap) wrap.innerHTML = patentTableHTML(list);
+}
+
+/* ===== DESIGNS ===== */
+function renderDesigns() {
+  const list = DB.designs.filter(d =>
+    !designSearch || [d.designNo, d.articleName, d.applicantName, d.instituteName, ...(d.creators||[]).map(c=>c.name)]
+      .some(v => (v||'').toLowerCase().includes(designSearch.toLowerCase()))
+  );
+  return `
+<div class="toolbar">
+  <input type="text" placeholder="Search by design no., article name, applicant, creator…" value="${designSearch}" oninput="designSearch=this.value;renderDesignsInPlace()">
+  <button class="btn primary" onclick="openDesignForm()"><i class="ti ti-plus"></i> Add Design</button>
+  <button class="btn" onclick="exportCSV('designs','IPR_Designs')"><i class="ti ti-download"></i> Export CSV</button>
+</div>
+<div class="tbl-wrap" id="design-table-wrap">
+  ${designTableHTML(list)}
+</div>`;
+}
+
+function designTableHTML(list) {
+  return `<table>
+<thead><tr>
+  <th>#</th><th>Ref. No.</th><th>Design No.</th><th>Article Name</th><th>Applicant</th>
+  <th>Class</th><th>App. Date</th><th>Country</th><th>Status</th><th>FER Due</th>
+  <th>Reg. Date</th><th>AY (Filing)</th><th>Institute</th><th></th>
+</tr></thead>
+<tbody>
+${list.length === 0 ? `<tr><td colspan="14"><div class="empty-state"><i class="ti ti-palette-off"></i>No designs found.</div></td></tr>` :
+  list.map((d,i) => `<tr>
+  <td>${i+1}</td>
+  <td>${d.refNo||'—'}</td>
+  <td style="font-weight:500">${d.designNo||'—'}</td>
+  <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.articleName||''}">${d.articleName||'—'}</td>
+  <td style="font-size:12px">${d.applicantName||'—'}</td>
+  <td>${d.designClass||'—'}</td>
+  <td style="white-space:nowrap">${formatDate(d.applicationDate)}</td>
+  <td>${d.filingCountry||'—'}</td>
+  <td>${statusPill(d.status)}</td>
+  <td><span class="${dueClass(d.ferDueDate)}">${formatDate(d.ferDueDate)}<span class="due-label">${dueLabel(d.ferDueDate)}</span></span></td>
+  <td style="white-space:nowrap">${formatDate(d.registrationDate)}</td>
+  <td style="white-space:nowrap">${getAY(d.applicationDate)}</td>
+  <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.instituteName||'—'}</td>
+  <td><div class="action-btns">
+    <button class="btn-icon" onclick="viewDesignDetail('${d.id}')" title="View"><i class="ti ti-eye"></i></button>
+    <button class="btn-icon" onclick="openDesignForm('${d.id}')" title="Edit"><i class="ti ti-edit"></i></button>
+    <button class="btn-icon" onclick="deleteRec('designs','${d.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+  </div></td>
+</tr>`).join('')}
+</tbody></table>`;
+}
+
+function renderDesignsInPlace() {
+  updateAlertBadge();
+  const list = DB.designs.filter(d =>
+    !designSearch || [d.designNo, d.articleName, d.applicantName, d.instituteName, ...(d.creators||[]).map(c=>c.name)]
+      .some(v => (v||'').toLowerCase().includes(designSearch.toLowerCase()))
+  );
+  const wrap = document.getElementById('design-table-wrap');
+  if (wrap) wrap.innerHTML = designTableHTML(list);
+}
+
+/* ===== COPYRIGHTS ===== */
+function renderCopyrights() {
+  const list = DB.copyrights.filter(c =>
+    !copyrightSearch || [c.title, c.rocNo, c.submittedBy, c.instituteName]
+      .some(v => (v||'').toLowerCase().includes(copyrightSearch.toLowerCase()))
+  );
+  return `
+<div class="toolbar">
+  <input type="text" placeholder="Search by title, ROC no., submitted by, institute…" value="${copyrightSearch}" oninput="copyrightSearch=this.value;renderCopyrightsInPlace()">
+  <button class="btn primary" onclick="openCopyrightForm()"><i class="ti ti-plus"></i> Add Copyright</button>
+  <button class="btn" onclick="exportCSV('copyrights','IPR_Copyrights')"><i class="ti ti-download"></i> Export CSV</button>
+</div>
+<div class="tbl-wrap" id="copyright-table-wrap">
+  ${copyrightTableHTML(list)}
+</div>`;
+}
+
+function copyrightTableHTML(list) {
+  return `<table>
+<thead><tr>
+  <th>#</th><th>Sr. No.</th><th>ROC/Diary No.</th><th>Title of Work</th><th>Class</th>
+  <th>Submitted By</th><th>Submitted On</th><th>Reg. Date</th><th>Status</th>
+  <th>FER Due</th><th>Authors ROC No.</th><th>Institute</th><th></th>
+</tr></thead>
+<tbody>
+${list.length === 0 ? `<tr><td colspan="13"><div class="empty-state"><i class="ti ti-copyright-off"></i>No copyrights found.</div></td></tr>` :
+  list.map((c,i) => `<tr>
+  <td>${i+1}</td>
+  <td>${c.srNo||'—'}</td>
+  <td style="font-weight:500">${c.rocNo||'—'}</td>
+  <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.title||''}">${c.title||'—'}</td>
+  <td>${c.classOfWork||'—'}</td>
+  <td>${c.submittedBy||'—'}</td>
+  <td style="white-space:nowrap">${formatDate(c.submittedOn)}</td>
+  <td style="white-space:nowrap">${formatDate(c.registrationDate)}</td>
+  <td>${statusPill(c.status)}</td>
+  <td><span class="${dueClass(c.ferDueDate)}">${formatDate(c.ferDueDate)}<span class="due-label">${dueLabel(c.ferDueDate)}</span></span></td>
+  <td>${c.authorsRocNo||'—'}</td>
+  <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.instituteName||'—'}</td>
+  <td><div class="action-btns">
+    <button class="btn-icon" onclick="openCopyrightForm('${c.id}')" title="Edit"><i class="ti ti-edit"></i></button>
+    <button class="btn-icon" onclick="deleteRec('copyrights','${c.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+  </div></td>
+</tr>`).join('')}
+</tbody></table>`;
+}
+
+function renderCopyrightsInPlace() {
+  updateAlertBadge();
+  const list = DB.copyrights.filter(c =>
+    !copyrightSearch || [c.title, c.rocNo, c.submittedBy, c.instituteName]
+      .some(v => (v||'').toLowerCase().includes(copyrightSearch.toLowerCase()))
+  );
+  const wrap = document.getElementById('copyright-table-wrap');
+  if (wrap) wrap.innerHTML = copyrightTableHTML(list);
+}
+
+/* ===== ALERTS TAB ===== */
+function renderAlertsTab() {
+  const alerts = getAllAlerts();
+  return `
+<div style="margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+  <span style="font-size:13px;color:var(--text-secondary)">Showing due dates within the next 60 days across all IPR types.</span>
+  <button class="btn primary sm" onclick="sendEmailAlerts()" style="margin-left:auto"><i class="ti ti-mail"></i> Send Email Alert Now</button>
+</div>
+<div class="panel">
+  ${alerts.length === 0 ?
+    `<div class="empty-state"><i class="ti ti-circle-check" style="color:#3B6D11"></i>No upcoming due dates in the next 60 days. All clear!</div>` :
+    alerts.map(a => `
+    <div class="alert-item">
+      <div class="alert-dot ${a.days < 0 ? 'dot-red' : a.days <= 7 ? 'dot-red' : a.days <= 15 ? 'dot-orange' : 'dot-blue'}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600">${a.title}</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:2px">
+          <span class="tag">${a.type}</span>${a.no ? `<span class="tag">${a.no}</span>` : ''}
+          <span style="margin-left:4px">${a.field}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:2px"><i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px"></i> Due: ${formatDate(a.date)}</div>
+      </div>
+      <div class="${a.days < 0 ? 'due-red' : a.days <= 15 ? 'due-red' : 'due-orange'}" style="white-space:nowrap;font-size:13px">${dueLabel(a.date)}</div>
+    </div>`).join('')}
+</div>`;
+}
+
+/* ===== EMAIL CONFIG ===== */
+function renderEmailConfig() {
+  return `
+<div class="config-block">
+  <h3><i class="ti ti-mail-cog" style="font-size:15px;vertical-align:-2px"></i> Email Alert Configuration</h3>
+  <div class="config-row"><label>Recipient Email(s)</label><input type="text" id="cfg-rcpt" value="${DB.emailConfig.recipients}" placeholder="email1@inst.ac.in, email2@inst.ac.in"></div>
+  <div class="config-row"><label>From / Sender Name</label><input type="text" id="cfg-fromname" value="${DB.emailConfig.fromName}" placeholder="IP Cell Alert System"></div>
+  <div class="config-row"><label>Alert lead days</label>
+    <select id="cfg-days" multiple style="height:auto;min-height:80px">
+      ${[1,3,7,15,30,60].map(d => `<option value="${d}" ${DB.emailConfig.alertDays.includes(d) ? 'selected' : ''}>${d} day${d>1?'s':''} before due</option>`).join('')}
+    </select>
+  </div>
+  <div class="config-row"><label>SMTP / API key</label><input type="text" id="cfg-smtp" value="${DB.emailConfig.smtp}" placeholder="smtp.gmail.com or SendGrid/Mailgun API key"></div>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn primary" onclick="saveEmailConfig()"><i class="ti ti-device-floppy"></i> Save Configuration</button>
+    <button class="btn" onclick="sendEmailAlerts()"><i class="ti ti-mail"></i> Send Test Alert</button>
+  </div>
+</div>
+<div class="info-block">
+  <h3><i class="ti ti-info-circle" style="font-size:14px;vertical-align:-1px"></i> How email alerts work</h3>
+  <p>The system tracks due dates for:</p>
+  <ul>
+    <li>FER response deadlines — Patents, Designs, Copyrights (6 months from receipt)</li>
+    <li>Subsequent FER response deadlines (6 months from sub-FER receipt)</li>
+    <li>Patent renewal dues (annually from filing date, up to 20th year)</li>
+    <li>Written submission deadlines after hearings (15 days from hearing date)</li>
+    <li>Publication dates (~1–2 months from filing)</li>
+  </ul>
+  <p style="margin-top:8px">Alert emails are triggered at the configured lead days before each due date. Click <strong>Send Email Alert Now</strong> on the Alerts tab to send an immediate summary. For automated daily scheduling, connect this system to a Node.js/Python backend with a cron job and your preferred email provider (Gmail API, SendGrid, Mailgun, or SMTP).</p>
+</div>`;
+}
+
+function saveEmailConfig() {
+  DB.emailConfig.recipients = g('cfg-rcpt');
+  DB.emailConfig.fromName = g('cfg-fromname');
+  DB.emailConfig.smtp = g('cfg-smtp');
+  const sel = document.getElementById('cfg-days');
+  if (sel) DB.emailConfig.alertDays = Array.from(sel.selectedOptions).map(o => parseInt(o.value));
+  toast('Email configuration saved.');
+}
+
+function sendEmailAlerts() {
+  const alerts = getAllAlerts();
+  if (!alerts.length) { toast('No upcoming due dates to alert.'); return; }
+  const subject = `IPR Due Date Alert — ${alerts.length} item(s) require attention`;
+  const body = [`IPR Due Date Alerts — ${new Date().toLocaleDateString('en-IN')}`, '', ...alerts.map(a =>
+    `[${a.type.toUpperCase()}] ${a.title}\n  ${a.field}: ${formatDate(a.date)} (${dueLabel(a.date)})\n  Ref: ${a.no || 'N/A'}`
+  )].join('\n\n');
+  window.location.href = `mailto:${DB.emailConfig.recipients}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/* ===== DELETE ===== */
+function deleteRec(type, id) {
+  if (!confirm('Permanently delete this record?')) return;
+  DB[type] = DB[type].filter(r => r.id !== id);
+  toast('Record deleted.');
+  render();
+}
+
+/* ===== EXPORT ===== */
+function exportCSV(type, filename) {
+  const rows = DB[type];
+  if (!rows.length) { toast('No data to export.'); return; }
+  const flat = rows.map(r => {
+    const obj = {};
+    Object.entries(r).forEach(([k, v]) => {
+      if (Array.isArray(v)) obj[k] = v.map(x => typeof x === 'object' ? Object.values(x).join(' | ') : x).join('; ');
+      else if (typeof v !== 'object') obj[k] = v;
+    });
+    return obj;
+  });
+  const keys = Object.keys(flat[0]);
+  const csv = [keys.join(','), ...flat.map(r => keys.map(k => `"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))].join('\r\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `${filename}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast(`Exported ${rows.length} records.`);
+}
+
+/* ===== MODAL HELPERS ===== */
+function openModal(html) {
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+/* ===== PATENT FORM ===== */
+let _patent = null;
+let _design = null;
+
+function openPatentForm(id) {
+  _patent = id ? JSON.parse(JSON.stringify(DB.patents.find(x => x.id === id))) :
+    { id: uid(), applicants: [{name:'',address:''}], inventors: [{name:'',address:'',email:'',phone:''}], status: 'Filed' };
+  const isEdit = !!id;
+  openModal(patentFormHTML(_patent, isEdit));
+}
+
+function patentFormHTML(p, isEdit) {
+  return `
+<h2><i class="ti ti-file-certificate"></i> ${isEdit ? 'Edit' : 'Add'} Patent</h2>
+<div class="form-grid">
+  <div class="fg-hdr">Applicant Information</div>
+  <div class="multi-box">
+    <div class="multi-lbl">Applicants (Multiple Allowed)</div>
+    <div id="applicants-list">
+      ${(p.applicants||[]).map((a,i) => `
+      <div class="entry-row two" id="appl-row-${i}">
+        <input placeholder="Applicant name" value="${a.name||''}" oninput="_patent.applicants[${i}].name=this.value">
+        <input placeholder="Address" value="${a.address||''}" oninput="_patent.applicants[${i}].address=this.value">
+        <button class="btn-icon" onclick="removeApplicant(${i})"><i class="ti ti-x"></i></button>
+      </div>`).join('')}
+    </div>
+    <button class="btn sm" onclick="addApplicant()" style="margin-top:6px"><i class="ti ti-plus"></i> Add applicant</button>
+  </div>
+  <div class="fg-hdr">Inventor Information</div>
+  <div class="multi-box">
+    <div class="multi-lbl">Inventors (Multiple Allowed)</div>
+    <div id="inventors-list">
+      ${(p.inventors||[]).map((a,i) => `
+      <div class="entry-row four" id="inv-row-${i}">
+        <input placeholder="Inventor name" value="${a.name||''}" oninput="_patent.inventors[${i}].name=this.value">
+        <input placeholder="Address" value="${a.address||''}" oninput="_patent.inventors[${i}].address=this.value">
+        <input placeholder="Email" value="${a.email||''}" oninput="_patent.inventors[${i}].email=this.value">
+        <input placeholder="Phone" value="${a.phone||''}" oninput="_patent.inventors[${i}].phone=this.value">
+        <button class="btn-icon" onclick="removeInventor(${i})"><i class="ti ti-x"></i></button>
+      </div>`).join('')}
+    </div>
+    <button class="btn sm" onclick="addInventor()" style="margin-top:6px"><i class="ti ti-plus"></i> Add inventor</button>
+  </div>
+  <div class="fg-hdr">Patent Details</div>
+  <div class="form-group"><label>Patent Number</label><input type="text" id="f-patentNo" value="${p.patentNo||''}"></div>
+  <div class="form-group"><label>Title of the Patent</label><input type="text" id="f-title" value="${p.title||''}"></div>
+  <div class="form-group"><label>Filing Date</label><input type="date" id="f-filingDate" value="${p.filingDate||''}" onchange="onFilingDateChange()"></div>
+  <div class="form-group"><label>Date of Publication <small>(auto: ~2 months from filing)</small></label><input type="date" id="f-pubDate" value="${p.pubDate||''}"></div>
+  <div class="fg-hdr">FER Details</div>
+  <div class="form-group"><label>Receipt Date of FER</label><input type="date" id="f-ferDate" value="${p.ferDate||''}" onchange="onFERDateChange()"></div>
+  <div class="form-group"><label>FER Response Due Date <small>(auto: +6 months)</small></label><input type="date" id="f-ferDueDate" value="${p.ferDueDate||''}"></div>
+  <div class="form-group"><label>Subsequent FER Receipt Date</label><input type="date" id="f-subFerDate" value="${p.subFerDate||''}" onchange="onSubFERDateChange()"></div>
+  <div class="form-group"><label>Subsequent FER Response Due <small>(auto: +6 months)</small></label><input type="date" id="f-subFerDueDate" value="${p.subFerDueDate||''}"></div>
+  <div class="fg-hdr">Hearing Details</div>
+  <div class="form-group"><label>Date of 1st Hearing</label><input type="date" id="f-hearing1" value="${p.hearing1||''}" onchange="onHearing1Change()"></div>
+  <div class="form-group"><label>Written Submission 1 Due <small>(auto: +15 days)</small></label><input type="date" id="f-ws1Due" value="${p.ws1Due||''}"></div>
+  <div class="form-group"><label>Date of 2nd Hearing</label><input type="date" id="f-hearing2" value="${p.hearing2||''}" onchange="onHearing2Change()"></div>
+  <div class="form-group"><label>Written Submission 2 Due <small>(auto: +15 days)</small></label><input type="date" id="f-ws2Due" value="${p.ws2Due||''}"></div>
+  <div class="fg-hdr">Grant & Renewal</div>
+  <div class="form-group"><label>Year of Grant</label><input type="text" id="f-yearOfGrant" value="${p.yearOfGrant||''}" placeholder="e.g. 2024"></div>
+  <div class="form-group"><label>Next Renewal Due Date <small>(auto: annual from filing)</small></label><input type="date" id="f-renewalDue" value="${p.renewalDue||''}"></div>
+  <div class="fg-hdr">Year Classification</div>
+  <div class="form-group"><label>Academic Year</label><input type="text" id="f-ay" value="${p.academicYear||getAY(p.filingDate)||''}" placeholder="e.g. 2024-25"></div>
+  <div class="form-group"><label>Calendar Year</label><input type="text" id="f-cy" value="${p.calYear||getCY(p.filingDate)||''}"></div>
+  <div class="form-group"><label>Financial Year</label><input type="text" id="f-fy" value="${p.finYear||getFY(p.filingDate)||''}" placeholder="e.g. 2024-25"></div>
+  <div class="form-group"><label>Current Status</label>
+    <select id="f-status">
+      ${['Filed','Published','Under Examination','FER Received','Hearing Scheduled','Granted','Abandoned'].map(s => `<option ${(p.status||'Filed')===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+  </div>
+  <div class="form-group fg-full"><label>Institute Name</label><input type="text" id="f-instituteName" value="${p.instituteName||''}"></div>
+</div>
+<div class="modal-footer">
+  <button class="btn" onclick="closeModal()">Cancel</button>
+  <button class="btn primary" onclick="savePatent('${p.id}',${isEdit})">${isEdit ? 'Update' : 'Save'} Patent</button>
+</div>`;
+}
+
+function addApplicant() {
+  _patent.applicants.push({name:'',address:''});
+  const list = document.getElementById('applicants-list');
+  const i = _patent.applicants.length - 1;
+  const div = document.createElement('div');
+  div.className = 'entry-row two'; div.id = `appl-row-${i}`;
+  div.innerHTML = `<input placeholder="Applicant name" oninput="_patent.applicants[${i}].name=this.value">
+    <input placeholder="Address" oninput="_patent.applicants[${i}].address=this.value">
+    <button class="btn-icon" onclick="removeApplicant(${i})"><i class="ti ti-x"></i></button>`;
+  list.appendChild(div);
+}
+
+function removeApplicant(i) {
+  _patent.applicants.splice(i, 1);
+  openPatentForm(_patent.id);
+}
+
+function addInventor() {
+  _patent.inventors.push({name:'',address:'',email:'',phone:''});
+  const list = document.getElementById('inventors-list');
+  const i = _patent.inventors.length - 1;
+  const div = document.createElement('div');
+  div.className = 'entry-row four'; div.id = `inv-row-${i}`;
+  div.innerHTML = `<input placeholder="Inventor name" oninput="_patent.inventors[${i}].name=this.value">
+    <input placeholder="Address" oninput="_patent.inventors[${i}].address=this.value">
+    <input placeholder="Email" oninput="_patent.inventors[${i}].email=this.value">
+    <input placeholder="Phone" oninput="_patent.inventors[${i}].phone=this.value">
+    <button class="btn-icon" onclick="removeInventor(${i})"><i class="ti ti-x"></i></button>`;
+  list.appendChild(div);
+}
+
+function removeInventor(i) {
+  _patent.inventors.splice(i, 1);
+  openPatentForm(_patent.id);
+}
+
+function onFilingDateChange() {
+  const v = g('f-filingDate');
+  const ay = document.getElementById('f-ay'); if(ay && !ay.value) ay.value = getAY(v);
+  const cy = document.getElementById('f-cy'); if(cy && !cy.value) cy.value = getCY(v);
+  const fy = document.getElementById('f-fy'); if(fy && !fy.value) fy.value = getFY(v);
+  const pub = document.getElementById('f-pubDate'); if(pub && !pub.value) pub.value = addMonths(v, 2);
+  const ren = document.getElementById('f-renewalDue'); if(ren && !ren.value) ren.value = addYears(v, 1);
+}
+function onFERDateChange() {
+  const v = g('f-ferDate');
+  const el = document.getElementById('f-ferDueDate'); if(el && !el.value) el.value = addMonths(v, 6);
+}
+function onSubFERDateChange() {
+  const v = g('f-subFerDate');
+  const el = document.getElementById('f-subFerDueDate'); if(el && !el.value) el.value = addMonths(v, 6);
+}
+function onHearing1Change() {
+  const v = g('f-hearing1');
+  const el = document.getElementById('f-ws1Due'); if(el && !el.value) el.value = addDays(v, 15);
+}
+function onHearing2Change() {
+  const v = g('f-hearing2');
+  const el = document.getElementById('f-ws2Due'); if(el && !el.value) el.value = addDays(v, 15);
+}
+
+function savePatent(id, isEdit) {
+  if (!g('f-title')) { alert('Please enter the patent title.'); return; }
+  const p = _patent;
+  p.patentNo = g('f-patentNo'); p.title = g('f-title');
+  p.filingDate = g('f-filingDate'); p.pubDate = g('f-pubDate');
+  p.ferDate = g('f-ferDate'); p.ferDueDate = g('f-ferDueDate');
+  p.subFerDate = g('f-subFerDate'); p.subFerDueDate = g('f-subFerDueDate');
+  p.hearing1 = g('f-hearing1'); p.ws1Due = g('f-ws1Due');
+  p.hearing2 = g('f-hearing2'); p.ws2Due = g('f-ws2Due');
+  p.yearOfGrant = g('f-yearOfGrant'); p.renewalDue = g('f-renewalDue');
+  p.academicYear = g('f-ay'); p.calYear = g('f-cy'); p.finYear = g('f-fy');
+  p.status = g('f-status'); p.instituteName = g('f-instituteName');
+  if (isEdit) { const i = DB.patents.findIndex(x => x.id === id); if (i >= 0) DB.patents[i] = p; }
+  else DB.patents.push(p);
+  closeModal(); toast(isEdit ? 'Patent updated.' : 'Patent saved.'); render();
+}
+
+/* ===== PATENT DETAIL VIEW ===== */
+function viewPatentDetail(id) {
+  const p = DB.patents.find(x => x.id === id); if (!p) return;
+  openModal(`
+<h2><i class="ti ti-file-certificate"></i> ${p.title || 'Patent'} &nbsp;${statusPill(p.status)}</h2>
+<div class="detail-section"><h3>Applicants</h3>
+  ${(p.applicants||[]).map(a => `<div style="margin-bottom:6px"><strong>${a.name||'—'}</strong><br><span style="font-size:12px;color:var(--text-secondary)">${a.address||''}</span></div>`).join('')||'—'}
+</div>
+<div class="detail-section"><h3>Inventors</h3>
+  ${(p.inventors||[]).map(a => `<div style="margin-bottom:8px"><strong>${a.name||'—'}</strong><br><span style="font-size:12px;color:var(--text-secondary)">${[a.address,a.email,a.phone].filter(Boolean).join(' · ')}</span></div>`).join('')||'—'}
+</div>
+<div class="detail-section"><h3>Patent Details</h3>
+  <div class="detail-grid">
+    <div class="detail-field"><div class="lbl">Patent No.</div><div class="val">${p.patentNo||'—'}</div></div>
+    <div class="detail-field"><div class="lbl">Filing Date</div><div class="val">${formatDate(p.filingDate)}</div></div>
+    <div class="detail-field"><div class="lbl">Publication Date</div><div class="val">${formatDate(p.pubDate)}</div></div>
+    <div class="detail-field"><div class="lbl">Year of Grant</div><div class="val">${p.yearOfGrant||'—'}</div></div>
+    <div class="detail-field"><div class="lbl">Institute</div><div class="val">${p.instituteName||'—'}</div></div>
+    <div class="detail-field"><div class="lbl">Academic Year</div><div class="val">${p.academicYear||getAY(p.filingDate)}</div></div>
+    <div class="detail-field"><div class="lbl">Calendar Year</div><div class="val">${p.calYear||getCY(p.filingDate)}</div></div>
+    <div class="detail-field"><div class="lbl">Financial Year</div><div class="val">${p.finYear||getFY(p.filingDate)}</div></div>
+  </div>
+</div>
+<div class="detail-section"><h3>FER &amp; Hearings</h3>
+  <div class="detail-grid">
+    <div class="detail-field"><div class="lbl">FER Receipt Date</div><div class="val">${formatDate(p.ferDate)}</div></div>
+    <div class="detail-field"><div class="lbl">FER Due Date</div><div class="val ${dueClass(p.ferDueDate)}">${formatDate(p.ferDueDate)}<span class="due-label">${dueLabel(p.ferDueDate)}</span></div></div>
+    <div class="detail-field"><div class="lbl">Sub-FER Receipt</div><div class="val">${formatDate(p.subFerDate)}</div></div>
+    <div class="detail-field"><div class="lbl">Sub-FER Due</div><div class="val ${dueClass(p.subFerDueDate)}">${formatDate(p.subFerDueDate)}<span class="due-label">${dueLabel(p.subFerDueDate)}</span></div></div>
+    <div class="detail-field"><div class="lbl">1st Hearing</div><div class="val">${formatDate(p.hearing1)}</div></div>
+    <div class="detail-field"><div class="lbl">Written Sub. 1 Due</div><div class="val ${dueClass(p.ws1Due)}">${formatDate(p.ws1Due)}<span class="due-label">${dueLabel(p.ws1Due)}</span></div></div>
+    <div class="detail-field"><div class="lbl">2nd Hearing</div><div class="val">${formatDate(p.hearing2)}</div></div>
+    <div class="detail-field"><div class="lbl">Written Sub. 2 Due</div><div class="val ${dueClass(p.ws2Due)}">${formatDate(p.ws2Due)}<span class="due-label">${dueLabel(p.ws2Due)}</span></div></div>
+    <div class="detail-field"><div class="lbl">Renewal Due</div><div class="val ${dueClass(p.renewalDue)}">${formatDate(p.renewalDue)}<span class="due-label">${dueLabel(p.renewalDue)}</span></div></div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn" onclick="closeModal()">Close</button>
+  <button class="btn primary" onclick="closeModal();openPatentForm('${p.id}')"><i class="ti ti-edit"></i> Edit</button>
+</div>`);
+}
+
+/* ===== DESIGN FORM ===== */
+function openDesignForm(id) {
+  _design = id ? JSON.parse(JSON.stringify(DB.designs.find(x => x.id === id))) :
+    { id: uid(), creators: [{name:'',address:'',email:'',phone:''}], status: 'Filed', filingCountry: 'India' };
+  openModal(designFormHTML(_design, !!id));
+}
+
+function designFormHTML(d, isEdit) {
+  return `
+<h2><i class="ti ti-palette"></i> ${isEdit ? 'Edit' : 'Add'} Design</h2>
+<div class="form-grid">
+  <div class="form-group"><label>Ref. File No.</label><input type="text" id="d-refNo" value="${d.refNo||''}"></div>
+  <div class="form-group"><label>Design No.</label><input type="text" id="d-designNo" value="${d.designNo||''}"></div>
+  <div class="form-group"><label>Design Class</label><input type="text" id="d-designClass" value="${d.designClass||''}" placeholder="e.g. Cl.14-04"></div>
+  <div class="form-group"><label>Applicant Name</label><input type="text" id="d-applicantName" value="${d.applicantName||''}"></div>
+  <div class="form-group fg-full"><label>Design / Article Name</label><input type="text" id="d-articleName" value="${d.articleName||''}"></div>
+  <div class="form-group"><label>Application Date</label><input type="date" id="d-applicationDate" value="${d.applicationDate||''}" onchange="onDesignAppDateChange()"></div>
+  <div class="form-group"><label>Filing Country</label><input type="text" id="d-filingCountry" value="${d.filingCountry||'India'}"></div>
+  <div class="form-group"><label>Design Registration Date</label><input type="date" id="d-registrationDate" value="${d.registrationDate||''}" onchange="onDesignRegDateChange()"></div>
+  <div class="form-group"><label>Status</label>
+    <select id="d-status">${['Filed','Pending','Registered','Abandoned','Objected'].map(s=>`<option ${(d.status||'Filed')===s?'selected':''}>${s}</option>`).join('')}</select>
+  </div>
+  <div class="form-group fg-full"><label>Institute Name</label><input type="text" id="d-instituteName" value="${d.instituteName||''}"></div>
+  <div class="fg-hdr">Year Classification — Filing Date</div>
+  <div class="form-group"><label>Academic Year (Filing)</label><input type="text" id="d-ay" value="${d.academicYear||getAY(d.applicationDate)||''}" placeholder="e.g. 2024-25"></div>
+  <div class="form-group"><label>Calendar Year (Filing)</label><input type="text" id="d-cy" value="${d.calYear||getCY(d.applicationDate)||''}"></div>
+  <div class="form-group"><label>Financial Year (Filing)</label><input type="text" id="d-fy" value="${d.finYear||getFY(d.applicationDate)||''}"></div>
+  <div class="fg-hdr">Year Classification — Registration Date</div>
+  <div class="form-group"><label>Academic Year (Reg.)</label><input type="text" id="d-ray" value="${d.regAcYear||getAY(d.registrationDate)||''}"></div>
+  <div class="form-group"><label>Calendar Year (Reg.)</label><input type="text" id="d-rcy" value="${d.regCalYear||getCY(d.registrationDate)||''}"></div>
+  <div class="form-group"><label>Financial Year (Reg.)</label><input type="text" id="d-rfy" value="${d.regFinYear||getFY(d.registrationDate)||''}"></div>
+  <div class="fg-hdr">Creator Information</div>
+  <div class="multi-box">
+    <div class="multi-lbl">Creators (Multiple Allowed)</div>
+    <div id="creators-list">
+      ${(d.creators||[]).map((c,i) => `
+      <div class="entry-row four" id="crt-row-${i}">
+        <input placeholder="Creator name" value="${c.name||''}" oninput="_design.creators[${i}].name=this.value">
+        <input placeholder="Address" value="${c.address||''}" oninput="_design.creators[${i}].address=this.value">
+        <input placeholder="Email" value="${c.email||''}" oninput="_design.creators[${i}].email=this.value">
+        <input placeholder="Mobile" value="${c.phone||''}" oninput="_design.creators[${i}].phone=this.value">
+        <button class="btn-icon" onclick="removeCreator(${i})"><i class="ti ti-x"></i></button>
+      </div>`).join('')}
+    </div>
+    <button class="btn sm" onclick="addCreator()" style="margin-top:6px"><i class="ti ti-plus"></i> Add creator</button>
+  </div>
+  <div class="fg-hdr">FER Details</div>
+  <div class="form-group"><label>FER Receipt Date</label><input type="date" id="d-ferDate" value="${d.ferDate||''}" onchange="onDesignFERChange()"></div>
+  <div class="form-group"><label>FER Response Due <small>(auto: +6 months)</small></label><input type="date" id="d-ferDueDate" value="${d.ferDueDate||''}"></div>
+  <div class="form-group"><label>Hearing Date</label><input type="date" id="d-hearingDate" value="${d.hearingDate||''}"></div>
+</div>
+<div class="modal-footer">
+  <button class="btn" onclick="closeModal()">Cancel</button>
+  <button class="btn primary" onclick="saveDesign('${d.id}',${isEdit})">${isEdit ? 'Update' : 'Save'} Design</button>
+</div>`;
+}
+
+function onDesignAppDateChange() {
+  const v = g('d-applicationDate');
+  const ay=document.getElementById('d-ay'); if(ay&&!ay.value) ay.value=getAY(v);
+  const cy=document.getElementById('d-cy'); if(cy&&!cy.value) cy.value=getCY(v);
+  const fy=document.getElementById('d-fy'); if(fy&&!fy.value) fy.value=getFY(v);
+}
+function onDesignRegDateChange() {
+  const v = g('d-registrationDate');
+  const ray=document.getElementById('d-ray'); if(ray&&!ray.value) ray.value=getAY(v);
+  const rcy=document.getElementById('d-rcy'); if(rcy&&!rcy.value) rcy.value=getCY(v);
+  const rfy=document.getElementById('d-rfy'); if(rfy&&!rfy.value) rfy.value=getFY(v);
+}
+function onDesignFERChange() {
+  const v = g('d-ferDate');
+  const el = document.getElementById('d-ferDueDate'); if(el&&!el.value) el.value=addMonths(v,6);
+}
+function addCreator() {
+  _design.creators.push({name:'',address:'',email:'',phone:''});
+  const list = document.getElementById('creators-list');
+  const i = _design.creators.length - 1;
+  const div = document.createElement('div');
+  div.className='entry-row four'; div.id=`crt-row-${i}`;
+  div.innerHTML=`<input placeholder="Creator name" oninput="_design.creators[${i}].name=this.value">
+    <input placeholder="Address" oninput="_design.creators[${i}].address=this.value">
+    <input placeholder="Email" oninput="_design.creators[${i}].email=this.value">
+    <input placeholder="Mobile" oninput="_design.creators[${i}].phone=this.value">
+    <button class="btn-icon" onclick="removeCreator(${i})"><i class="ti ti-x"></i></button>`;
+  list.appendChild(div);
+}
+function removeCreator(i) { _design.creators.splice(i,1); openDesignForm(_design.id); }
+
+function saveDesign(id, isEdit) {
+  if (!g('d-articleName')) { alert('Please enter the article/design name.'); return; }
+  const d = _design;
+  d.refNo=g('d-refNo'); d.designNo=g('d-designNo'); d.designClass=g('d-designClass');
+  d.applicantName=g('d-applicantName'); d.articleName=g('d-articleName');
+  d.applicationDate=g('d-applicationDate'); d.filingCountry=g('d-filingCountry');
+  d.registrationDate=g('d-registrationDate'); d.status=g('d-status');
+  d.instituteName=g('d-instituteName');
+  d.academicYear=g('d-ay'); d.calYear=g('d-cy'); d.finYear=g('d-fy');
+  d.regAcYear=g('d-ray'); d.regCalYear=g('d-rcy'); d.regFinYear=g('d-rfy');
+  d.ferDate=g('d-ferDate'); d.ferDueDate=g('d-ferDueDate'); d.hearingDate=g('d-hearingDate');
+  if (isEdit) { const i=DB.designs.findIndex(x=>x.id===id); if(i>=0) DB.designs[i]=d; }
+  else DB.designs.push(d);
+  closeModal(); toast(isEdit?'Design updated.':'Design saved.'); render();
+}
+
+function viewDesignDetail(id) {
+  const d = DB.designs.find(x => x.id === id); if (!d) return;
+  openModal(`
+<h2><i class="ti ti-palette"></i> ${d.articleName||'Design'} &nbsp;${statusPill(d.status)}</h2>
+<div class="detail-grid" style="margin-bottom:14px">
+  <div class="detail-field"><div class="lbl">Ref. No.</div><div class="val">${d.refNo||'—'}</div></div>
+  <div class="detail-field"><div class="lbl">Design No.</div><div class="val">${d.designNo||'—'}</div></div>
+  <div class="detail-field"><div class="lbl">Class</div><div class="val">${d.designClass||'—'}</div></div>
+  <div class="detail-field"><div class="lbl">Applicant</div><div class="val">${d.applicantName||'—'}</div></div>
+  <div class="detail-field"><div class="lbl">Application Date</div><div class="val">${formatDate(d.applicationDate)}</div></div>
+  <div class="detail-field"><div class="lbl">Filing Country</div><div class="val">${d.filingCountry||'—'}</div></div>
+  <div class="detail-field"><div class="lbl">Registration Date</div><div class="val">${formatDate(d.registrationDate)}</div></div>
+  <div class="detail-field"><div class="lbl">Institute</div><div class="val">${d.instituteName||'—'}</div></div>
+  <div class="detail-field"><div class="lbl">FER Due Date</div><div class="val ${dueClass(d.ferDueDate)}">${formatDate(d.ferDueDate)}<span class="due-label">${dueLabel(d.ferDueDate)}</span></div></div>
+  <div class="detail-field"><div class="lbl">Hearing Date</div><div class="val">${formatDate(d.hearingDate)}</div></div>
+  <div class="detail-field"><div class="lbl">AY (Filing)</div><div class="val">${d.academicYear||getAY(d.applicationDate)}</div></div>
+  <div class="detail-field"><div class="lbl">AY (Reg.)</div><div class="val">${d.regAcYear||'—'}</div></div>
+</div>
+<div class="detail-section"><h3>Creators</h3>
+  ${(d.creators||[]).map(c=>`<div style="margin-bottom:8px"><strong>${c.name||'—'}</strong><br><span style="font-size:12px;color:var(--text-secondary)">${[c.address,c.email,c.phone].filter(Boolean).join(' · ')}</span></div>`).join('')||'—'}
+</div>
+<div class="modal-footer">
+  <button class="btn" onclick="closeModal()">Close</button>
+  <button class="btn primary" onclick="closeModal();openDesignForm('${d.id}')"><i class="ti ti-edit"></i> Edit</button>
+</div>`);
+}
+
+/* ===== COPYRIGHT FORM ===== */
+function openCopyrightForm(id) {
+  const c = id ? JSON.parse(JSON.stringify(DB.copyrights.find(x=>x.id===id))) : { id: uid(), status: 'Filed' };
+  const isEdit = !!id;
+  openModal(`
+<h2><i class="ti ti-copyright"></i> ${isEdit ? 'Edit' : 'Add'} Copyright</h2>
+<div class="form-grid">
+  <div class="form-group"><label>Sr. No.</label><input type="text" id="c-srNo" value="${c.srNo||''}"></div>
+  <div class="form-group"><label>ROC / Diary Number</label><input type="text" id="c-rocNo" value="${c.rocNo||''}"></div>
+  <div class="form-group fg-full"><label>Title of the Work</label><input type="text" id="c-title" value="${c.title||''}"></div>
+  <div class="form-group"><label>Class of Work</label>
+    <select id="c-classOfWork">
+      ${['Literary','Dramatic','Musical','Artistic','Cinematograph Film','Sound Recording','Software'].map(s=>`<option ${c.classOfWork===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+  </div>
+  <div class="form-group"><label>Submitted By</label><input type="text" id="c-submittedBy" value="${c.submittedBy||''}"></div>
+  <div class="form-group"><label>Submitted On</label><input type="date" id="c-submittedOn" value="${c.submittedOn||''}"></div>
+  <div class="form-group"><label>Date of Registration</label><input type="date" id="c-registrationDate" value="${c.registrationDate||''}"></div>
+  <div class="form-group"><label>Status</label>
+    <select id="c-status">${['Filed','Pending','Registered','Objected','Abandoned'].map(s=>`<option ${(c.status||'Filed')===s?'selected':''}>${s}</option>`).join('')}</select>
+  </div>
+  <div class="form-group"><label>Authors ROC Number</label><input type="text" id="c-authorsRocNo" value="${c.authorsRocNo||''}"></div>
+  <div class="form-group fg-full"><label>Institute Name</label><input type="text" id="c-instituteName" value="${c.instituteName||''}"></div>
+  <div class="fg-hdr">FER Details</div>
+  <div class="form-group"><label>FER Receipt Date</label><input type="date" id="c-ferDate" value="${c.ferDate||''}" onchange="onCopyrightFERChange()"></div>
+  <div class="form-group"><label>FER Response Due <small>(auto: +6 months)</small></label><input type="date" id="c-ferDueDate" value="${c.ferDueDate||''}"></div>
+</div>
+<div class="modal-footer">
+  <button class="btn" onclick="closeModal()">Cancel</button>
+  <button class="btn primary" onclick="saveCopyright('${c.id}',${isEdit})">${isEdit ? 'Update' : 'Save'} Copyright</button>
+</div>`);
+  window._editCopyright = JSON.parse(JSON.stringify(c));
+}
+
+function onCopyrightFERChange() {
+  const v = g('c-ferDate');
+  const el = document.getElementById('c-ferDueDate'); if(el&&!el.value) el.value=addMonths(v,6);
+}
+
+function saveCopyright(id, isEdit) {
+  if (!g('c-title')) { alert('Please enter the title of the work.'); return; }
+  const c = window._editCopyright || { id };
+  c.srNo=g('c-srNo'); c.rocNo=g('c-rocNo'); c.title=g('c-title');
+  c.classOfWork=g('c-classOfWork'); c.submittedBy=g('c-submittedBy');
+  c.submittedOn=g('c-submittedOn'); c.registrationDate=g('c-registrationDate');
+  c.status=g('c-status'); c.authorsRocNo=g('c-authorsRocNo');
+  c.instituteName=g('c-instituteName'); c.ferDate=g('c-ferDate'); c.ferDueDate=g('c-ferDueDate');
+  if (isEdit) { const i=DB.copyrights.findIndex(x=>x.id===id); if(i>=0) DB.copyrights[i]=c; }
+  else DB.copyrights.push(c);
+  closeModal(); toast(isEdit?'Copyright updated.':'Copyright saved.'); render();
+}
+
+/* ===== SAMPLE DATA ===== */
+function loadSampleData() {
+  DB.patents = [
+    { id:uid(), patentNo:'202321010234', title:'Smart Water Management System using IoT Sensors',
+      applicants:[{name:'Institute of Technology Mumbai',address:'Powai, Mumbai 400076'}],
+      inventors:[{name:'Dr. Ramesh Kumar',address:'Powai, Mumbai',email:'ramesh@itm.ac.in',phone:'9876543210'},
+                 {name:'Ms. Priya Singh',address:'Andheri, Mumbai',email:'priya@itm.ac.in',phone:'9845001234'}],
+      filingDate:'2023-02-15', pubDate:'2023-04-20',
+      ferDate:'2024-01-20', ferDueDate:'2024-07-20',
+      subFerDate:'', subFerDueDate:'', hearing1:'', ws1Due:'', hearing2:'', ws2Due:'',
+      yearOfGrant:'', renewalDue:'2024-02-15',
+      status:'Under Examination', instituteName:'Institute of Technology Mumbai',
+      academicYear:'2022-23', calYear:'2023', finYear:'2022-23' },
+    { id:uid(), patentNo:'202421018765', title:'Biodegradable Packaging Material from Agricultural Waste',
+      applicants:[{name:'Green Innovation Labs Pvt Ltd',address:'Baner, Pune 411045'}],
+      inventors:[{name:'Prof. Anita Desai',address:'Pune',email:'anita@gil.in',phone:'9800000001'}],
+      filingDate:'2024-06-01', pubDate:'2024-08-05',
+      ferDate:'', ferDueDate:'', subFerDate:'', subFerDueDate:'',
+      hearing1:'', ws1Due:'', hearing2:'', ws2Due:'',
+      yearOfGrant:'', renewalDue:'2025-06-01',
+      status:'Filed', instituteName:'Green Innovation Labs',
+      academicYear:'2024-25', calYear:'2024', finYear:'2024-25' },
+    { id:uid(), patentNo:'202121005678', title:'Neural Interface Device for Prosthetic Limb Control',
+      applicants:[{name:'BioTech Innovations Pvt Ltd',address:'Koramangala, Bangalore 560034'},
+                  {name:'AIIMS Research Foundation',address:'New Delhi 110029'}],
+      inventors:[{name:'Dr. Suresh Nair',address:'Bangalore',email:'suresh@bio.in',phone:'9900000002'},
+                 {name:'Dr. Kavita Rao',address:'Bangalore',email:'kavita@bio.in',phone:'9900000003'}],
+      filingDate:'2021-08-12', pubDate:'2021-10-20',
+      ferDate:'2022-09-05', ferDueDate:'2023-03-05',
+      subFerDate:'2023-05-10', subFerDueDate:'2023-11-10',
+      hearing1:'2023-08-14', ws1Due:'2023-08-29',
+      hearing2:'2024-01-22', ws2Due:'2024-02-06',
+      yearOfGrant:'2024', renewalDue:'2025-08-12',
+      status:'Granted', instituteName:'BioTech Innovations Pvt Ltd',
+      academicYear:'2021-22', calYear:'2021', finYear:'2021-22' }
+  ];
+  DB.designs = [
+    { id:uid(), refNo:'DES-2024-001', designNo:'327845', designClass:'Cl.14-04',
+      applicantName:'Craft Design Studio', articleName:'Ergonomic Office Chair with Lumbar Support',
+      applicationDate:'2024-03-10', filingCountry:'India', registrationDate:'2024-09-15',
+      ferDate:'2024-05-01', ferDueDate:'2024-11-01', hearingDate:'2024-10-10',
+      status:'Registered', instituteName:'Craft Design Studio, Ahmedabad',
+      academicYear:'2023-24', calYear:'2024', finYear:'2023-24',
+      regAcYear:'2024-25', regCalYear:'2024', regFinYear:'2024-25',
+      creators:[{name:'Arun Mehta',address:'Ahmedabad',email:'arun@craft.in',phone:'9700000001'},
+                {name:'Neha Shah',address:'Ahmedabad',email:'neha@craft.in',phone:'9700000002'}] },
+    { id:uid(), refNo:'DES-2023-008', designNo:'', designClass:'Cl.06-01',
+      applicantName:'FurniTech Solutions', articleName:'Modular Kitchen Cabinet Unit',
+      applicationDate:'2023-11-20', filingCountry:'India', registrationDate:'',
+      ferDate:'2024-02-15', ferDueDate:'2024-08-15', hearingDate:'',
+      status:'Pending', instituteName:'FurniTech Solutions, Rajkot',
+      academicYear:'2023-24', calYear:'2023', finYear:'2023-24',
+      regAcYear:'', regCalYear:'', regFinYear:'',
+      creators:[{name:'Rajan Patel',address:'Rajkot',email:'rajan@furnitech.in',phone:''}] }
+  ];
+  DB.copyrights = [
+    { id:uid(), srNo:'1', rocNo:'SW-2024-7890', title:'AI-Based Medical Image Diagnosis Software',
+      classOfWork:'Software', submittedBy:'Dr. Mahesh Patil', submittedOn:'2024-01-15',
+      registrationDate:'2024-04-20', status:'Registered', authorsRocNo:'AUT-2024-001',
+      instituteName:'Medical Technology Institute, Nagpur', ferDate:'', ferDueDate:'' },
+    { id:uid(), srNo:'2', rocNo:'ART-2023-4521', title:'Digital Textile Pattern Collection — Autumn Series',
+      classOfWork:'Artistic', submittedBy:'Textile Design Department', submittedOn:'2023-11-01',
+      registrationDate:'', status:'Pending', authorsRocNo:'',
+      instituteName:'National Institute of Design, Ahmedabad',
+      ferDate:'2024-02-10', ferDueDate:'2024-08-10' },
+    { id:uid(), srNo:'3', rocNo:'LIT-2024-1122', title:'Handbook on Intellectual Property Rights for Researchers',
+      classOfWork:'Literary', submittedBy:'IP Cell Committee', submittedOn:'2024-05-01',
+      registrationDate:'2024-07-10', status:'Registered', authorsRocNo:'AUT-2024-007',
+      instituteName:'Institute of Technology Mumbai', ferDate:'', ferDueDate:'' }
+  ];
+}
+
+/* ===== REPORTS & ANALYSIS ===== */
+
+/* ---- Palette ---- */
+const RPT_PALETTE = ['#8B0000','#C0392B','#E67E22','#27AE60','#2980B9','#8E44AD','#16A085','#D35400','#7F8C8D','#F39C12'];
+const RPT_STATUS_COLOR = {
+  'granted':'#27AE60','registered':'#27AE60',
+  'filed':'#8B0000','pending':'#E67E22',
+  'published':'#2980B9','examination':'#8E44AD',
+  'abandoned':'#7F8C8D','objected':'#C0392B'
+};
+
+function rptStatusColor(s){ return RPT_STATUS_COLOR[(s||'').toLowerCase()] || '#95a5a6'; }
+
+/* ---- Analysis helpers ---- */
+function rptGroupBy(arr, fn) {
+  const m = {};
+  arr.forEach(x => { const k = fn(x)||'Unknown'; m[k] = (m[k]||0)+1; });
+  return m;
+}
+function rptSortMap(m, desc=true) {
+  return Object.entries(m).sort((a,b) => desc ? b[1]-a[1] : a[1]-b[1]);
+}
+
+/* ---- SVG Bar Chart ---- */
+function svgBar(data, opts={}) {
+  const W=480, BAR_H=22, GAP=7, PL=170, PR=60, PT=10, PB=20;
+  const max = Math.max(...data.map(d=>d.v),1);
+  const H = PT + data.length*(BAR_H+GAP) + PB;
+  const rows = data.map((d,i) => {
+    const y = PT + i*(BAR_H+GAP);
+    const bw = Math.max(2, ((d.v/max)*(W-PL-PR)));
+    const color = d.c || RPT_PALETTE[i % RPT_PALETTE.length];
+    return `
+      <text x="${PL-6}" y="${y+BAR_H/2+4}" text-anchor="end" font-size="11" fill="#555" font-family="sans-serif">${d.l.length>22?d.l.slice(0,21)+'…':d.l}</text>
+      <rect x="${PL}" y="${y}" width="${bw}" height="${BAR_H}" rx="3" fill="${color}" opacity=".88"/>
+      <text x="${PL+bw+5}" y="${y+BAR_H/2+4}" font-size="11" fill="#333" font-family="sans-serif" font-weight="600">${d.v}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="height:${H}px">${rows}</svg>`;
+}
+
+/* ---- SVG Donut Chart ---- */
+function svgDonut(data, opts={}) {
+  const W=220, cx=110, cy=110, R=80, r=48;
+  const total = data.reduce((s,d)=>s+d.v,0)||1;
+  let angle=-Math.PI/2;
+  const slices = data.map((d,i) => {
+    const theta = (d.v/total)*2*Math.PI;
+    const x1=cx+R*Math.cos(angle), y1=cy+R*Math.sin(angle);
+    angle+=theta;
+    const x2=cx+R*Math.cos(angle), y2=cy+R*Math.sin(angle);
+    const xi1=cx+r*Math.cos(angle-theta), yi1=cy+r*Math.sin(angle-theta);
+    const xi2=cx+r*Math.cos(angle), yi2=cy+r*Math.sin(angle);
+    const large=theta>Math.PI?1:0;
+    const color=d.c||RPT_PALETTE[i%RPT_PALETTE.length];
+    return `<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2} L${xi2},${yi2} A${r},${r} 0 ${large},0 ${xi1},${yi1} Z" fill="${color}" opacity=".9" stroke="#fff" stroke-width="2"/>
+    <title>${d.l}: ${d.v}</title>`;
+  }).join('');
+  const pct = data.length && total ? Math.round((data[0].v/total)*100) : 0;
+  return `<svg viewBox="0 0 ${W} ${W}" xmlns="http://www.w3.org/2000/svg" style="height:180px">
+    ${slices}
+    <circle cx="${cx}" cy="${cy}" r="${r-2}" fill="white"/>
+    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="22" font-weight="700" font-family="sans-serif" fill="#1a1a18">${total}</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">Total</text>
+  </svg>`;
+}
+
+/* ---- SVG Line / Area Chart ---- */
+function svgLine(series, labels, opts={}) {
+  const W=480, H=180, PL=40, PR=20, PT=16, PB=30;
+  const iW=W-PL-PR, iH=H-PT-PB;
+  const allVals = series.flatMap(s=>s.data);
+  const maxV=Math.max(...allVals,1), minV=0;
+  const xs=labels.map((_,i)=>PL+i*(iW/Math.max(labels.length-1,1)));
+  const ys=v=>PT+iH-((v-minV)/(maxV-minV))*iH;
+  const gridLines=[0,0.25,0.5,0.75,1].map(f=>{
+    const y=PT+iH*(1-f), val=Math.round(minV+(maxV-minV)*f);
+    return `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#e5e5e5" stroke-width="1"/>
+    <text x="${PL-4}" y="${y+4}" text-anchor="end" font-size="9" fill="#aaa" font-family="sans-serif">${val}</text>`;
+  }).join('');
+  const xLabels=labels.map((l,i)=>`<text x="${xs[i]}" y="${H-2}" text-anchor="middle" font-size="9" fill="#aaa" font-family="sans-serif">${l}</text>`).join('');
+  const paths=series.map((s,si)=>{
+    const pts=s.data.map((v,i)=>`${xs[i]},${ys(v)}`).join(' ');
+    const color=s.color||RPT_PALETTE[si%RPT_PALETTE.length];
+    const areaPath=`M${xs[0]},${ys(s.data[0])} `+s.data.map((v,i)=>`L${xs[i]},${ys(v)}`).join(' ')+` L${xs[s.data.length-1]},${PT+iH} L${xs[0]},${PT+iH} Z`;
+    return `<path d="${areaPath}" fill="${color}" opacity=".08"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>
+    ${s.data.map((v,i)=>`<circle cx="${xs[i]}" cy="${ys(v)}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>`).join('')}`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="height:${H}px;width:100%">
+    ${gridLines}${xLabels}${paths}</svg>`;
+}
+
+/* ---- SVG Stacked Bar Chart ---- */
+function svgStackedBar(data, labels, colors, opts={}) {
+  // data: [{label, values:[]}], labels: category names
+  const W=480, H=200, PL=50, PR=20, PT=20, PB=40;
+  const iW=W-PL-PR, iH=H-PT-PB;
+  const maxV=Math.max(...data.map(d=>d.values.reduce((s,v)=>s+v,0)),1);
+  const bw=Math.max(12, iW/data.length*0.55), gap=(iW-(bw*data.length))/(data.length+1);
+  const gridLines=[0,0.25,0.5,0.75,1].map(f=>{
+    const y=PT+iH*(1-f), val=Math.round(maxV*f);
+    return `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#e5e5e5" stroke-width="1"/>
+    <text x="${PL-4}" y="${y+4}" text-anchor="end" font-size="9" fill="#aaa" font-family="sans-serif">${val}</text>`;
+  }).join('');
+  const bars=data.map((d,i)=>{
+    const x=PL+gap+i*(bw+gap);
+    let yOff=PT+iH;
+    const rects=d.values.map((v,j)=>{
+      const h=(v/maxV)*iH;
+      yOff-=h;
+      return `<rect x="${x}" y="${yOff}" width="${bw}" height="${h}" rx="2" fill="${colors[j]||RPT_PALETTE[j]}" opacity=".88"/>`;
+    }).join('');
+    const lbl=d.label.length>8?d.label.slice(0,8)+'…':d.label;
+    return `${rects}<text x="${x+bw/2}" y="${H-5}" text-anchor="middle" font-size="9" fill="#888" font-family="sans-serif">${lbl}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="height:${H}px;width:100%">${gridLines}${bars}</svg>`;
+}
+
+/* ---- Legend HTML ---- */
+function legendHTML(items) {
+  return `<div class="rpt-legend">${items.map((it,i)=>`<div class="rpt-legend-item"><div class="rpt-legend-dot" style="background:${it.c||RPT_PALETTE[i%RPT_PALETTE.length]}"></div>${it.l}</div>`).join('')}</div>`;
+}
+
+/* ---- Main Render ---- */
+function renderReports() {
+  const rptType = (document.getElementById('rpt-type-sel') ? document.getElementById('rpt-type-sel').value : 'overview') || 'overview';
+  const periodSel = (document.getElementById('rpt-period-sel') ? document.getElementById('rpt-period-sel').value : 'all') || 'all';
+
+  const allIPR = [
+    ...DB.patents.map(p=>({...p,_type:'Patent',_date:p.filingDate,_status:p.status,_ay:p.academicYear,_cy:p.calYear})),
+    ...DB.designs.map(d=>({...d,_type:'Design',_date:d.applicationDate,_status:d.status,_ay:d.academicYear,_cy:d.calYear})),
+    ...DB.copyrights.map(c=>({...c,_type:'Copyright',_date:c.submittedOn,_status:c.status,_ay:c.academicYear||getAY(c.submittedOn),_cy:c.calYear||getCY(c.submittedOn)}))
+  ];
+
+  // Filter by period
+  let filtered = allIPR;
+  if (periodSel !== 'all') {
+    filtered = allIPR.filter(x => x._ay === periodSel || x._cy === periodSel);
+  }
+
+  const periods = [...new Set(allIPR.map(x=>x._ay).filter(Boolean))].sort();
+  const periodOpts = `<option value="all">All Periods</option>${periods.map(p=>`<option value="${p}"${periodSel===p?' selected':''}>${p}</option>`).join('')}`;
+
+  const typeOpts = ['overview','patents','designs','copyrights','trend','institution'].map(t=>
+    `<option value="${t}"${rptType===t?' selected':''}>${{overview:'📊 Overview',patents:'📄 Patents Deep-Dive',designs:'🎨 Designs Deep-Dive',copyrights:'©️ Copyrights Deep-Dive',trend:'📈 Year-on-Year Trend',institution:'🏛 Institution-wise'}[t]}</option>`).join('');
+
+  const toolbar = `<div class="rpt-toolbar">
+    <select id="rpt-type-sel" onchange="renderReportsInPlace()">${typeOpts}</select>
+    <select id="rpt-period-sel" onchange="renderReportsInPlace()">${periodOpts}</select>
+    <button class="btn primary rpt-print-btn" onclick="window.print()"><i class="ti ti-printer"></i> Print / Export PDF</button>
+  </div>`;
+
+  let body = '';
+  if (rptType === 'overview')    body = rptOverview(filtered, allIPR);
+  if (rptType === 'patents')     body = rptPatentsDeep(filtered.filter(x=>x._type==='Patent'));
+  if (rptType === 'designs')     body = rptDesignsDeep(filtered.filter(x=>x._type==='Design'));
+  if (rptType === 'copyrights')  body = rptCopyrightsDeep(filtered.filter(x=>x._type==='Copyright'));
+  if (rptType === 'trend')       body = rptTrend(allIPR);
+  if (rptType === 'institution') body = rptInstitution(filtered);
+
+  return `<div class="rpt-section">${toolbar}</div>${body}`;
+}
+
+function renderReportsInPlace() {
+  if (currentTab !== 'reports') return;
+  document.getElementById('main-content').innerHTML = renderReports();
+}
+
+/* -------- OVERVIEW -------- */
+function rptOverview(data, allData) {
+  const patents   = data.filter(x=>x._type==='Patent');
+  const designs   = data.filter(x=>x._type==='Design');
+  const copyrights= data.filter(x=>x._type==='Copyright');
+  const total = data.length;
+
+  // Status breakdown
+  const statusMap = rptGroupBy(data, x=>x._status);
+  const statusData = rptSortMap(statusMap).map(([l,v],i)=>({l,v,c:rptStatusColor(l)}));
+  const donutData = [
+    {l:'Patents',v:patents.length,c:'#8B0000'},
+    {l:'Designs',v:designs.length,c:'#E67E22'},
+    {l:'Copyrights',v:copyrights.length,c:'#2980B9'}
+  ].filter(x=>x.v>0);
+
+  const grantedCount = data.filter(x=>['granted','registered'].includes((x._status||'').toLowerCase())).length;
+  const pendingCount = data.filter(x=>['pending','filed','published','examination'].includes((x._status||'').toLowerCase())).length;
+  const grantRate = total ? Math.round(grantedCount/total*100) : 0;
+
+  // Top institutions
+  const instMap = rptGroupBy(data, x=>x.instituteName||x.applicantName||'Unknown');
+  const topInst = rptSortMap(instMap).slice(0,7).map(([l,v],i)=>({l,v,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+
+  return `
+  <div class="rpt-kpi-row">
+    <div class="rpt-kpi blue"><div class="k-val">${total}</div><div class="k-lbl">Total IPRs</div></div>
+    <div class="rpt-kpi blue"><div class="k-val">${patents.length}</div><div class="k-lbl">Patents</div></div>
+    <div class="rpt-kpi amber"><div class="k-val">${designs.length}</div><div class="k-lbl">Designs</div></div>
+    <div class="rpt-kpi" style="border-top:3px solid #2980B9"><div class="k-val" style="color:#2980B9">${copyrights.length}</div><div class="k-lbl">Copyrights</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${grantedCount}</div><div class="k-lbl">Granted/Registered</div></div>
+    <div class="rpt-kpi amber"><div class="k-val">${pendingCount}</div><div class="k-lbl">In-Progress</div></div>
+    <div class="rpt-kpi ${grantRate>=50?'green':'amber'}"><div class="k-val">${grantRate}%</div><div class="k-lbl">Grant Rate</div></div>
+  </div>
+  <div class="rpt-grid">
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-chart-pie"></i> IPR Type Distribution</div>
+      ${svgDonut(donutData)}
+      ${legendHTML(donutData)}
+      <div class="rpt-insight"><b>Insight:</b> Patents form ${total?Math.round(patents.length/total*100):0}% of the portfolio. ${patents.length>designs.length+copyrights.length?'Patent filings dominate the IP portfolio.':'Diversified IP portfolio across all categories.'}</div>
+    </div>
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-chart-bar"></i> Status Breakdown</div>
+      ${statusData.length ? svgBar(statusData) : '<div class="empty-state">No data</div>'}
+      <div class="rpt-insight"><b>Grant Rate:</b> ${grantRate}% of IPRs have been granted or registered. ${grantRate>60?'Excellent prosecution success rate.':grantRate>30?'Moderate grant rate — follow up on pending matters.':'Several filings still pending — monitor prosecution closely.'}</div>
+    </div>
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-building"></i> Top Filing Institutions</div>
+      ${topInst.length ? svgBar(topInst) : '<div class="empty-state">No data</div>'}
+      <div class="rpt-insight"><b>Insight:</b> ${topInst.length ? `<b>${topInst[0].l}</b> leads with <b>${topInst[0].v}</b> IPR filing(s). Top 3 institutions account for ${total?Math.round(topInst.slice(0,3).reduce((s,x)=>s+x.v,0)/total*100):0}% of all filings.` : 'No institution data available.'}</div>
+    </div>
+  </div>`;
+}
+
+/* -------- PATENTS DEEP DIVE -------- */
+function rptPatentsDeep(patents) {
+  const total = patents.length;
+  const granted = patents.filter(p=>p._status && p._status.toLowerCase()==='granted').length;
+  const filed   = patents.filter(p=>p._status && p._status.toLowerCase()==='filed').length;
+  const pending = patents.filter(p=>p._status && ['pending','examination','published'].includes(p._status.toLowerCase())).length;
+
+  const statusMap = rptGroupBy(patents, p=>p._status);
+  const statusData = rptSortMap(statusMap).map(([l,v])=>({l,v,c:rptStatusColor(l)}));
+
+  const ayMap = rptGroupBy(patents, p=>p._ay||'Unknown');
+  const ayData = Object.entries(ayMap).sort((a,b)=>a[0].localeCompare(b[0])).map(([l,v],i)=>({l,v,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+
+  const instMap = rptGroupBy(patents, p=>p.instituteName||'Unknown');
+  const instData = rptSortMap(instMap).slice(0,8).map(([l,v],i)=>({l,v,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+
+  const tableRows = patents.slice(0,15).map(p=>`
+    <tr>
+      <td>${p.patentNo||'—'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.title||''}">${p.title||'—'}</td>
+      <td>${statusPill(p._status)}</td>
+      <td>${formatDate(p.filingDate)}</td>
+      <td>${p.academicYear||'—'}</td>
+      <td>${p.instituteName||'—'}</td>
+    </tr>`).join('');
+
+  return `
+  <div class="rpt-kpi-row">
+    <div class="rpt-kpi blue"><div class="k-val">${total}</div><div class="k-lbl">Total Patents</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${granted}</div><div class="k-lbl">Granted</div></div>
+    <div class="rpt-kpi amber"><div class="k-val">${pending}</div><div class="k-lbl">In Examination</div></div>
+    <div class="rpt-kpi blue"><div class="k-val">${filed}</div><div class="k-lbl">Filed</div></div>
+    <div class="rpt-kpi ${granted&&total?'green':'amber'}"><div class="k-val">${total?Math.round(granted/total*100):0}%</div><div class="k-lbl">Grant Rate</div></div>
+  </div>
+  <div class="rpt-grid">
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-chart-pie"></i> Patent Status Distribution</div>
+      ${svgDonut(statusData.map((d,i)=>({...d,c:rptStatusColor(d.l)})))}
+      ${legendHTML(statusData.map((d,i)=>({l:d.l,c:rptStatusColor(d.l)})))}
+    </div>
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-calendar"></i> Filings by Academic Year</div>
+      ${ayData.length ? svgBar(ayData) : '<div class="empty-state">No data</div>'}
+      <div class="rpt-insight">${ayData.length ? `Peak filing year: <b>${ayData.reduce((a,b)=>a.v>b.v?a:b).l}</b> with <b>${ayData.reduce((a,b)=>a.v>b.v?a:b).v}</b> patent(s).` : 'No trend data.'}</div>
+    </div>
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-building"></i> Patents by Institution</div>
+      ${instData.length ? svgBar(instData) : '<div class="empty-state">No data</div>'}
+    </div>
+  </div>
+  <div class="rpt-section" style="margin-top:18px">
+    <div class="rpt-section-hdr"><i class="ti ti-table"></i> Patent Register (Top 15)</div>
+    <div class="rpt-table-wrap">
+      <table><thead><tr><th>Patent No.</th><th>Title</th><th>Status</th><th>Filing Date</th><th>Academic Year</th><th>Institution</th></tr></thead>
+      <tbody>${tableRows||'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px">No patents found</td></tr>'}</tbody></table>
+    </div>
+  </div>`;
+}
+
+/* -------- DESIGNS DEEP DIVE -------- */
+function rptDesignsDeep(designs) {
+  const total = designs.length;
+  const registered = designs.filter(d=>d._status && d._status.toLowerCase()==='registered').length;
+  const classMap = rptGroupBy(designs, d=>d.designClass||'Unknown');
+  const classData = rptSortMap(classMap).map(([l,v],i)=>({l,v,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+  const statusMap = rptGroupBy(designs, d=>d._status);
+  const statusData = rptSortMap(statusMap).map(([l,v])=>({l,v,c:rptStatusColor(l)}));
+  const instMap = rptGroupBy(designs, d=>d.instituteName||d.applicantName||'Unknown');
+  const instData = rptSortMap(instMap).slice(0,8).map(([l,v],i)=>({l,v,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+  const tableRows = designs.map(d=>`<tr>
+    <td>${d.designNo||d.refNo||'—'}</td>
+    <td>${d.articleName||'—'}</td>
+    <td>${statusPill(d._status)}</td>
+    <td>${d.designClass||'—'}</td>
+    <td>${formatDate(d.applicationDate)}</td>
+    <td>${d.instituteName||d.applicantName||'—'}</td>
+  </tr>`).join('');
+  return `
+  <div class="rpt-kpi-row">
+    <div class="rpt-kpi blue"><div class="k-val">${total}</div><div class="k-lbl">Total Designs</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${registered}</div><div class="k-lbl">Registered</div></div>
+    <div class="rpt-kpi amber"><div class="k-val">${total-registered}</div><div class="k-lbl">Pending</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${total?Math.round(registered/total*100):0}%</div><div class="k-lbl">Registration Rate</div></div>
+  </div>
+  <div class="rpt-grid">
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-chart-pie"></i> Status Distribution</div>
+      ${svgDonut(statusData.map((d,i)=>({...d,c:rptStatusColor(d.l)})))}
+      ${legendHTML(statusData.map(d=>({l:d.l,c:rptStatusColor(d.l)})))}
+    </div>
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-category"></i> By Design Class</div>
+      ${classData.length ? svgBar(classData) : '<div class="empty-state">No class data</div>'}
+      <div class="rpt-insight">${classData.length?`Most common class: <b>${classData[0].l}</b> with ${classData[0].v} design(s).`:'No class data.'}</div>
+    </div>
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-building"></i> Designs by Institution/Applicant</div>
+      ${instData.length ? svgBar(instData) : '<div class="empty-state">No data</div>'}
+    </div>
+  </div>
+  <div class="rpt-section" style="margin-top:18px">
+    <div class="rpt-section-hdr"><i class="ti ti-table"></i> Design Register</div>
+    <div class="rpt-table-wrap">
+      <table><thead><tr><th>Design No./Ref</th><th>Article Name</th><th>Status</th><th>Class</th><th>Application Date</th><th>Institution</th></tr></thead>
+      <tbody>${tableRows||'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px">No designs found</td></tr>'}</tbody></table>
+    </div>
+  </div>`;
+}
+
+/* -------- COPYRIGHTS DEEP DIVE -------- */
+function rptCopyrightsDeep(copyrights) {
+  const total = copyrights.length;
+  const registered = copyrights.filter(c=>c._status && c._status.toLowerCase()==='registered').length;
+  const classMap = rptGroupBy(copyrights, c=>c.classOfWork||'Unknown');
+  const classData = rptSortMap(classMap).map(([l,v],i)=>({l,v,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+  const statusMap = rptGroupBy(copyrights, c=>c._status);
+  const statusData = rptSortMap(statusMap).map(([l,v])=>({l,v,c:rptStatusColor(l)}));
+  const instMap = rptGroupBy(copyrights, c=>c.instituteName||'Unknown');
+  const instData = rptSortMap(instMap).slice(0,8).map(([l,v],i)=>({l,v,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+  const tableRows = copyrights.map(c=>`<tr>
+    <td>${c.rocNo||'—'}</td>
+    <td>${c.title||'—'}</td>
+    <td>${statusPill(c._status)}</td>
+    <td>${c.classOfWork||'—'}</td>
+    <td>${formatDate(c.submittedOn)}</td>
+    <td>${c.instituteName||'—'}</td>
+  </tr>`).join('');
+  return `
+  <div class="rpt-kpi-row">
+    <div class="rpt-kpi blue"><div class="k-val">${total}</div><div class="k-lbl">Total Copyrights</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${registered}</div><div class="k-lbl">Registered</div></div>
+    <div class="rpt-kpi amber"><div class="k-val">${total-registered}</div><div class="k-lbl">Pending</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${total?Math.round(registered/total*100):0}%</div><div class="k-lbl">Registration Rate</div></div>
+  </div>
+  <div class="rpt-grid">
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-chart-pie"></i> Status Distribution</div>
+      ${svgDonut(statusData.map(d=>({...d,c:rptStatusColor(d.l)})))}
+      ${legendHTML(statusData.map(d=>({l:d.l,c:rptStatusColor(d.l)})))}
+    </div>
+    <div class="rpt-card">
+      <div class="rpt-card-title"><i class="ti ti-books"></i> By Class of Work</div>
+      ${classData.length ? svgBar(classData) : '<div class="empty-state">No data</div>'}
+      <div class="rpt-insight">${classData.length?`Dominant category: <b>${classData[0].l}</b> (${classData[0].v} work(s)).`:'No class data.'}</div>
+    </div>
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-building"></i> Copyrights by Institution</div>
+      ${instData.length ? svgBar(instData) : '<div class="empty-state">No data</div>'}
+    </div>
+  </div>
+  <div class="rpt-section" style="margin-top:18px">
+    <div class="rpt-section-hdr"><i class="ti ti-table"></i> Copyright Register</div>
+    <div class="rpt-table-wrap">
+      <table><thead><tr><th>ROC No.</th><th>Title</th><th>Status</th><th>Class of Work</th><th>Submitted On</th><th>Institution</th></tr></thead>
+      <tbody>${tableRows||'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px">No copyrights found</td></tr>'}</tbody></table>
+    </div>
+  </div>`;
+}
+
+/* -------- YEAR-ON-YEAR TREND -------- */
+function rptTrend(allData) {
+  const years = [...new Set(allData.map(x=>x._ay).filter(Boolean))].sort();
+  if (!years.length) return '<div class="empty-state"><i class="ti ti-chart-line"></i><br>Not enough data for trend analysis.</div>';
+
+  const patentCounts  = years.map(y=>allData.filter(x=>x._type==='Patent'&&x._ay===y).length);
+  const designCounts  = years.map(y=>allData.filter(x=>x._type==='Design'&&x._ay===y).length);
+  const copyrCounts   = years.map(y=>allData.filter(x=>x._type==='Copyright'&&x._ay===y).length);
+  const totalCounts   = years.map((_,i)=>patentCounts[i]+designCounts[i]+copyrCounts[i]);
+
+  const grantedTrend  = years.map(y=>allData.filter(x=>x._ay===y&&['granted','registered'].includes((x._status||'').toLowerCase())).length);
+
+  // Stacked bar: Patents / Designs / Copyrights per year
+  const stackedData   = years.map((y,i)=>({label:y, values:[patentCounts[i],designCounts[i],copyrCounts[i]]}));
+  const stackColors   = ['#8B0000','#E67E22','#2980B9'];
+
+  const peakYear = years[totalCounts.indexOf(Math.max(...totalCounts))];
+  const trend = totalCounts.length>1 ? (totalCounts[totalCounts.length-1] >= totalCounts[totalCounts.length-2] ? '📈 Growing' : '📉 Declining') : '–';
+
+  return `
+  <div class="rpt-kpi-row">
+    <div class="rpt-kpi blue"><div class="k-val">${years.length}</div><div class="k-lbl">Years of Data</div></div>
+    <div class="rpt-kpi blue"><div class="k-val">${allData.length}</div><div class="k-lbl">Total Filings</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${peakYear||'—'}</div><div class="k-lbl">Peak Year</div></div>
+    <div class="rpt-kpi ${trend.includes('Growing')?'green':'amber'}"><div class="k-val" style="font-size:18px">${trend}</div><div class="k-lbl">Recent Trend</div></div>
+  </div>
+  <div class="rpt-grid">
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-chart-line"></i> Total IPR Filings — Year-on-Year Trend</div>
+      ${svgLine([{label:'Total Filings',data:totalCounts,color:'#8B0000'},{label:'Granted/Registered',data:grantedTrend,color:'#27AE60'}], years)}
+      ${legendHTML([{l:'Total Filings',c:'#8B0000'},{l:'Granted/Registered',c:'#27AE60'}])}
+      <div class="rpt-insight"><b>Trend Analysis:</b> ${totalCounts.length>1?`Filings ${trend.toLowerCase()} year-over-year. Peak activity in <b>${peakYear}</b> with <b>${Math.max(...totalCounts)}</b> IPR(s) filed.`:'Add more records across years for trend analysis.'}</div>
+    </div>
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-chart-bar"></i> Filings by Type per Academic Year</div>
+      ${svgStackedBar(stackedData, ['Patents','Designs','Copyrights'], stackColors)}
+      ${legendHTML([{l:'Patents',c:'#8B0000'},{l:'Designs',c:'#E67E22'},{l:'Copyrights',c:'#2980B9'}])}
+    </div>
+  </div>
+  <div class="rpt-section" style="margin-top:18px">
+    <div class="rpt-section-hdr"><i class="ti ti-table"></i> Year-wise Summary Table</div>
+    <div class="rpt-table-wrap">
+      <table><thead><tr><th>Academic Year</th><th>Patents</th><th>Designs</th><th>Copyrights</th><th>Total</th><th>Granted/Registered</th><th>Grant Rate</th></tr></thead>
+      <tbody>${years.map((y,i)=>{
+        const g=grantedTrend[i], t=totalCounts[i];
+        return `<tr><td><b>${y}</b></td><td>${patentCounts[i]}</td><td>${designCounts[i]}</td><td>${copyrCounts[i]}</td><td><b>${t}</b></td><td>${g}</td><td>${t?Math.round(g/t*100):0}%</td></tr>`;
+      }).join('')}</tbody>
+      <tfoot><tr style="background:var(--bg-secondary);font-weight:700"><td>Total</td><td>${patentCounts.reduce((a,b)=>a+b,0)}</td><td>${designCounts.reduce((a,b)=>a+b,0)}</td><td>${copyrCounts.reduce((a,b)=>a+b,0)}</td><td>${allData.length}</td><td>${grantedTrend.reduce((a,b)=>a+b,0)}</td><td>${allData.length?Math.round(grantedTrend.reduce((a,b)=>a+b,0)/allData.length*100):0}%</td></tr></tfoot>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* -------- INSTITUTION-WISE -------- */
+function rptInstitution(data) {
+  const instMap = {};
+  data.forEach(x => {
+    const k = x.instituteName || x.applicantName || 'Unknown';
+    if (!instMap[k]) instMap[k] = {patents:0,designs:0,copyrights:0,granted:0};
+    if (x._type==='Patent')    instMap[k].patents++;
+    if (x._type==='Design')    instMap[k].designs++;
+    if (x._type==='Copyright') instMap[k].copyrights++;
+    if (['granted','registered'].includes((x._status||'').toLowerCase())) instMap[k].granted++;
+  });
+  const instList = Object.entries(instMap).map(([name,d])=>({name,total:d.patents+d.designs+d.copyrights,...d})).sort((a,b)=>b.total-a.total);
+  const top = instList.slice(0,8);
+  const barData = top.map((d,i)=>({l:d.name,v:d.total,c:RPT_PALETTE[i%RPT_PALETTE.length]}));
+  const stackedData = top.map(d=>({label:d.name,values:[d.patents,d.designs,d.copyrights]}));
+  const stackColors = ['#8B0000','#E67E22','#2980B9'];
+  return `
+  <div class="rpt-kpi-row">
+    <div class="rpt-kpi blue"><div class="k-val">${instList.length}</div><div class="k-lbl">Institutions</div></div>
+    <div class="rpt-kpi blue"><div class="k-val">${data.length}</div><div class="k-lbl">Total IPRs</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${instList.length?instList[0].name.split(' ').slice(0,2).join(' '):'—'}</div><div class="k-lbl">Top Institution</div></div>
+    <div class="rpt-kpi green"><div class="k-val">${instList.length?instList[0].total:0}</div><div class="k-lbl">Top Filing Count</div></div>
+  </div>
+  <div class="rpt-grid">
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-chart-bar"></i> Institution-wise Total Filings</div>
+      ${barData.length ? svgBar(barData) : '<div class="empty-state">No data</div>'}
+    </div>
+    <div class="rpt-card" style="grid-column:1/-1">
+      <div class="rpt-card-title"><i class="ti ti-chart-bar"></i> Institution-wise IPR Type Breakdown</div>
+      ${svgStackedBar(stackedData,['Patents','Designs','Copyrights'],stackColors)}
+      ${legendHTML([{l:'Patents',c:'#8B0000'},{l:'Designs',c:'#E67E22'},{l:'Copyrights',c:'#2980B9'}])}
+    </div>
+  </div>
+  <div class="rpt-section" style="margin-top:18px">
+    <div class="rpt-section-hdr"><i class="ti ti-table"></i> Institution-wise Summary</div>
+    <div class="rpt-table-wrap">
+      <table><thead><tr><th>#</th><th>Institution</th><th>Patents</th><th>Designs</th><th>Copyrights</th><th>Total</th><th>Granted/Reg.</th><th>Grant Rate</th></tr></thead>
+      <tbody>${instList.map((d,i)=>`<tr>
+        <td>${i+1}</td><td><b>${d.name}</b></td>
+        <td>${d.patents}</td><td>${d.designs}</td><td>${d.copyrights}</td>
+        <td><b>${d.total}</b></td><td>${d.granted}</td>
+        <td><span class="rpt-badge ${d.total&&d.granted/d.total>=0.5?'badge-granted':'badge-pending'}">${d.total?Math.round(d.granted/d.total*100):0}%</span></td>
+      </tr>`).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* ===== INIT ===== */
+loadSampleData();
+render();
+initLoginLogo();
+</script>
+</body>
+</html>
